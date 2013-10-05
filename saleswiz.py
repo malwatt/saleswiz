@@ -8,19 +8,19 @@ import csv
 from collections import OrderedDict
 
 
-beer_order = [('BOCK', 'DADDY BOCK'),]
-beer_extra = [('SAMPLE', 'BEER SAMPLER'),]
-beer_large = ('CHER', 'PITCHER')
+beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),]
+beer_extra = [('SAMPLE', '', 'BEER SAMPLER'),]
+beer_large = ('CHER', '', 'PITCHER')
 
-wine_order = [('CHAR', 'PENFOLDS CHARDONNAY'),]
-wine_extra = [('SPARK', 'MIONETTO SPARKING SPLIT'),]
-wine_large = ('BOTT', 'BOTTLE')
+wine_order = [('CHAR', '', 'PENFOLDS CHARDONNAY'),]
+wine_extra = [('SPARK', '', 'MIONETTO SPARKING SPLIT'),]
+wine_large = ('BOTT', '', 'BOTTLE')
 
-burgers_order = [('CLASSIC', 'CLASSIC'),]
-burgers_extra = [('VEG', 'VEGGIE'), ('BELLO', 'PORTABELLO'),]
-burgers_large = ('1/2', '1/2 LB')
+burgers_order = [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),]
+burgers_extra = [('VEG', '', 'VEGGIE'), ('BELLO', '', 'PORTABELLO'),]
+burgers_large = ('1/2', '', '1/2 LB')
 
-merchandise_order = [('HAT', 'HAT'), ('SHIRT', 'T-SHIRT'),]
+merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
 
 keys = ['Category', 'Subcategory', 'Item', 'Col03', 'Col04', 'Col05', 'Col06',
         'Col07', 'Col08', 'Quantity', 'Col10', 'Col11', 'Col12', 'Col13',
@@ -46,11 +46,15 @@ def parse_sales(sales_raw):
         burgers[c] = []
         merchandise[c] = []
 
-    with open(sales_raw, 'rb') as in_f:
-        in_d = csv.DictReader(in_f, fieldnames=keys, delimiter=',', quotechar='"')
-        for row in in_d:
-            [d[c].append(row[c].strip()) for c in cols]
-        in_f.close()
+    try:
+        with open(sales_raw, 'rb') as in_f:
+            in_d = csv.DictReader(in_f, fieldnames=keys, delimiter=',', quotechar='"')
+            for row in in_d:
+                [d[c].append(row[c].strip()) for c in cols]
+            in_f.close()
+    except:
+        print 'Problem reading file "%s".' % sales_raw.split('/')[-1]
+        return False
 
     category = ''
     subcategory = ''
@@ -86,16 +90,16 @@ def parse_sales(sales_raw):
         # Catch end of subcategory and organize if needed.
         if d['Subcategory'][r] and any(row[2:]):
             if subcategory == 'BEER':
-                beer2 = organize_complex(beer, beer_order, beer_extra, beer_large)
+                beer2 = organize(beer, beer_order, beer_extra, beer_large)
                 [d2[c].append(beer2[c][r2]) for r2 in xrange(len(beer2[cols[0]])) for c in cols]
             elif subcategory == 'WINE':
-                wine2 = organize_complex(wine, wine_order, wine_extra, wine_large)
+                wine2 = organize(wine, wine_order, wine_extra, wine_large)
                 [d2[c].append(wine2[c][r2]) for r2 in xrange(len(wine2[cols[0]])) for c in cols]
             elif subcategory == 'BURGERS':
-                burgers2 = organize_complex(burgers, burgers_order, burgers_extra, burgers_large)
+                burgers2 = organize(burgers, burgers_order, burgers_extra, burgers_large)
                 [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
             elif subcategory == 'MERCHANDISE':
-                merchandise2 = organize_simple(merchandise, merchandise_order)
+                merchandise2 = organize(merchandise, merchandise_order)
                 [d2[c].append(merchandise2[c][r2]) for r2 in xrange(len(merchandise2[cols[0]])) for c in cols]
             subcategory = ''
 
@@ -120,15 +124,52 @@ def parse_sales(sales_raw):
     return d2
 
 
-def organize_complex(d, order, extra, large):
-    d2 = {}
-    for c in cols:
-        d2[c] = []
+def organize(d, order, extra=[], large=()):
+    all = [[d[c][r] for c in cols] for r in xrange(len(d[cols[0]]))]
+    item = cols.index('Item')
+    items = ' '.join([all[j][item] for j in xrange(len(all))])
+    print items
 
-    return d2
+    if large:
+        if extra:
+            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item] and not any(e[0] in items for e in extra)]
+            larges = []
+            extras = []
+        else:
+            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item]] # ok
+            larges = [all[i] for i in xrange(len(all)) if large[0] in all[i][item]] # ok
+            extras = []
+    else:
+        if extra:
+            smalls = []
+            larges = []
+            extras = []
+        else:
+            smalls = all[:][:] # ok
+            larges = []
+            extras = []
+
+    orders = [order[:], order[:], extra[:]]
+    print
+    print smalls
+    print
+    print larges
+    print
+    print extras
+
+#    out = [[[] for i in xrange(len(order))] for j in xrange(len(smalls) + len(larges))]
+#    servingtypes = [smalls[:][:], larges[:][:], extras[:][:],]
+#    for i, servingtype in enumerate(servingtypes):
+#        for j in servingtype:
+#            for k, ord in enumerate(order):
+#                if ord[0] in j['Item']:
+#                    if out[i][k]:
+#                        out[i][k] = str(int(out[i][k]) + int(j['Quantity']))
+#                        out[i][k] = str(int(out[i][k]) + int(j['Quantity']))
+#                    else:
+#                        out[i][k] = []
 
 
-def organize_simple(d, order):
     d2 = {}
     for c in cols:
         d2[c] = []
@@ -165,7 +206,7 @@ def main():
         return
 
     d = parse_sales(sales_raw)
-    done = output_new(d, sales_clean)
+    done = output_new(d, sales_clean) if d else False
 
     print 'OK' if done else 'No Bueno'
 

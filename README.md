@@ -1,0 +1,1 @@
+Python script to organize PixelPOS "Profit by Summary Group" sales reports into a useful and consistent format.

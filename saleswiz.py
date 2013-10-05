@@ -20,19 +20,17 @@ burgers_order = [('CLASSIC', 'CLASSIC'),]
 burgers_extra = [('VEG', 'VEGGIE'), ('BELLO', 'PORTABELLO'),]
 burgers_large = ('1/2', '1/2 LB')
 
-order_merchandise = [('HAT', 'HAT'), ('SHIRT', 'T-SHIRT'),]
+merchandise_order = [('HAT', 'HAT'), ('SHIRT', 'T-SHIRT'),]
 
-keys = ['Category', 'Subcategory', 'Item', 'Col04', 'Col05', 'Col06', 'Col07',
-        'Col08', 'Quantity', 'Col10', 'Col11', 'Col12', 'Col13', 'Value',
-        'Col15', 'Cost', 'Col17', 'Col18', '% Cost', 'Col20', 'Col21',
-        'Profit', 'Col04',]
+keys = ['Category', 'Subcategory', 'Item', 'Col03', 'Col04', 'Col05', 'Col06',
+        'Col07', 'Col08', 'Quantity', 'Col10', 'Col11', 'Col12', 'Col13',
+        'Value', 'Col15', 'Cost', 'Col17', 'Col18', '% Cost', 'Col20', 'Col21',
+        'Profit', 'Col23',]
 cols = ['Category', 'Subcategory', 'Item', 'Quantity', 'Value',]
-exclude = ['FIRE', 'Summary', 'Report', 'Description', 'Page', 'PRINTED',]
+excludes = ['FIRE', 'Summary', 'Report', 'Description', 'Page', 'PRINTED',]
 
 
 def parse_sales(sales_raw):
-    with open(sales_raw, 'rb') as in_f:
-        in_f.close()
 
     d = {}
     d2 = {}
@@ -48,18 +46,108 @@ def parse_sales(sales_raw):
         burgers[c] = []
         merchandise[c] = []
 
-    return d
+    with open(sales_raw, 'rb') as in_f:
+        in_d = csv.DictReader(in_f, fieldnames=keys, delimiter=',', quotechar='"')
+        for row in in_d:
+            [d[c].append(row[c].strip()) for c in cols]
+        in_f.close()
+
+    category = ''
+    subcategory = ''
+    for r in xrange(len(d[cols[0]])):
+        row = [d[c][r] for c in cols]
+
+        # Ignore empty rows.
+        if not any(row):
+            continue
+
+        # Ignore rows with exclusion indicators.
+        if any(e in ' '.join(row) for e in excludes):
+            continue
+
+        # Catch categories and ignore duplicates.
+        if d['Category'][r] and not any(row[1:]):
+            if category:
+                continue
+            else:
+                category = d['Category'][r]
+
+        # Catch subcategories and ignore duplicates.
+        if d['Subcategory'][r] and not any(row[2:]):
+            if subcategory:
+                continue
+            else:
+                subcategory = d['Subcategory'][r]
+
+        # Catch end of category.
+        if d['Category'][r] and any(row[1:]):
+            category = ''
+
+        # Catch end of subcategory and organize if needed.
+        if d['Subcategory'][r] and any(row[2:]):
+            if subcategory == 'BEER':
+                beer2 = organize_complex(beer, beer_order, beer_extra, beer_large)
+                [d2[c].append(beer2[c][r2]) for r2 in xrange(len(beer2[cols[0]])) for c in cols]
+            elif subcategory == 'WINE':
+                wine2 = organize_complex(wine, wine_order, wine_extra, wine_large)
+                [d2[c].append(wine2[c][r2]) for r2 in xrange(len(wine2[cols[0]])) for c in cols]
+            elif subcategory == 'BURGERS':
+                burgers2 = organize_complex(burgers, burgers_order, burgers_extra, burgers_large)
+                [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
+            elif subcategory == 'MERCHANDISE':
+                merchandise2 = organize_simple(merchandise, merchandise_order)
+                [d2[c].append(merchandise2[c][r2]) for r2 in xrange(len(merchandise2[cols[0]])) for c in cols]
+            subcategory = ''
+
+        # Catch any items needing organizing.
+        if d['Item'][r]:
+            if subcategory == 'BEER':
+                [beer[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'WINE':
+                [wine[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'BURGERS':
+                [burgers[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'MERCHANDISE':
+                [merchandise[c].append(d[c][r]) for c in cols]
+                continue
+
+        # Add row to output dictionary.
+        [d2[c].append(d[c][r]) for c in cols]
+
+    return d2
+
+
+def organize_complex(d, order, extra, large):
+    d2 = {}
+    for c in cols:
+        d2[c] = []
+
+    return d2
+
+
+def organize_simple(d, order):
+    d2 = {}
+    for c in cols:
+        d2[c] = []
+
+    return d2
 
 
 def output_new(d, sales_clean):
-    with open(sales_clean, 'wb') as out_f:
-        out_d = csv.DictWriter(out_f, fieldname=OrderedDict([(c, None) for c in cols]))
-        out_d.writeheader()
-        for r in xrange(len(d[col[0]])):
-            out_d.writerow(OrderedDict([(c, d[c][r]) for c in cols]))
-        out_f.close()
-
-    return True
+    try:
+        with open(sales_clean, 'wb') as out_f:
+            out_d = csv.DictWriter(out_f, fieldnames=OrderedDict([(c, None) for c in cols]))
+            out_d.writeheader()
+            for r in xrange(len(d[cols[0]])):
+                out_d.writerow(OrderedDict([(c, d[c][r]) for c in cols]))
+            out_f.close()
+        return True
+    except:
+        print 'Problem writing file "%s".' % sales_clean.split('/')[-1]
+        return False
 
 
 def main():

@@ -10,6 +10,7 @@ from collections import OrderedDict
 
 # Chosen order for subcategories.
 # Position 0 is search term, 1 is search exclude term, 2 is chosen name.
+# Same for tuples for finding and naming large size.
 beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),]
 beer_extra = [('SAMPLE', '', 'BEER SAMPLER'),]
 beer_large = ('CHER', '', 'PITCHER')
@@ -24,16 +25,22 @@ burgers_large = ('1/2', '', '1/2 LB')
 
 merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
 
+# PixelPOS "Profit by Summary Group" sales report columns.
+# Nothing is in Cost, % Cost or Profit columns so ignoring.
 keys = ['Category', 'Subcategory', 'Item', 'Col03', 'Col04', 'Col05', 'Col06',
         'Col07', 'Col08', 'Quantity', 'Col10', 'Col11', 'Col12', 'Col13',
         'Value', 'Col15', 'Cost', 'Col17', 'Col18', '% Cost', 'Col20', 'Col21',
         'Profit', 'Col23',]
+
+# Output columns.
 cols = ['Category', 'Subcategory', 'Item', 'Quantity', 'Value',]
-excludes = ['FIRE', 'Summary', 'Report', 'Description', 'Page', 'PRINTED',]
+
+# Search terms for rows in input file to exclude.
+excludes = ['FIRE GRI', 'Summary', 'Report', 'Description', 'Page', 'PRINTED',]
 
 
 def parse_sales(sales_raw):
-
+    """Parse PixelPOS "Profit by Summary Group" sales report."""
     d = {}
     d2 = {}
     beer = {}
@@ -127,11 +134,11 @@ def parse_sales(sales_raw):
 
 
 def organize(d, order, extra=[], large=()):
+    """Organize report subcategories into consistent items and order."""
     all = [[d[c][r] for c in cols] for r in xrange(len(d[cols[0]]))]
     item = cols.index('Item')
     quantity = cols.index('Quantity')
     value = cols.index('Value')
-    items = ' '.join([all[j][item] for j in xrange(len(all))])  # MAW not using
 
     if large:
         if extra:
@@ -152,7 +159,7 @@ def organize(d, order, extra=[], large=()):
             larges = []
             extras = []
 
-    orders = [order[:], order[:], extra[:]]
+    orders = [order[:], order[:], extra[:],]
 
     servingtypes = [smalls[:][:], larges[:][:], extras[:][:],]
     out = [[[] for i in xrange(len(ordr)) if servingtypes[j]] for j, ordr in enumerate(orders)]
@@ -180,12 +187,16 @@ def organize(d, order, extra=[], large=()):
     for c in cols:
         d2[c] = []
 
-    print out
+    for servingtype in out:
+        for serving in servingtype:
+            for k, c in enumerate(cols):
+                [d2[c].append(serving[k])]
 
     return d2
 
 
 def output_new(d, sales_clean):
+    """Write output csv file."""
     try:
         with open(sales_clean, 'wb') as out_f:
             out_d = csv.DictWriter(out_f, fieldnames=OrderedDict([(c, None) for c in cols]))

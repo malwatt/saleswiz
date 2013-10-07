@@ -8,6 +8,8 @@ import csv
 from collections import OrderedDict
 
 
+# Chosen order for subcategories.
+# Position 0 is search term, 1 is search exclude term, 2 is chosen name.
 beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),]
 beer_extra = [('SAMPLE', '', 'BEER SAMPLER'),]
 beer_large = ('CHER', '', 'PITCHER')
@@ -127,52 +129,58 @@ def parse_sales(sales_raw):
 def organize(d, order, extra=[], large=()):
     all = [[d[c][r] for c in cols] for r in xrange(len(d[cols[0]]))]
     item = cols.index('Item')
-    items = ' '.join([all[j][item] for j in xrange(len(all))])
-    print items
+    quantity = cols.index('Quantity')
+    value = cols.index('Value')
+    items = ' '.join([all[j][item] for j in xrange(len(all))])  # MAW not using
 
     if large:
         if extra:
-            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item] and not any(e[0] in items for e in extra)]
-            larges = []
-            extras = []
+            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item] and not any(e[0] in all[i][item] for e in extra)]
+            larges = [all[i] for i in xrange(len(all)) if large[0] in all[i][item] and not (large[1] and large[1] in all[i][item]) and not any(e[0] in all[i][item] for e in extra)]
+            extras = [all[i] for i in xrange(len(all)) if any(e[0] in all[i][item] for e in extra)]
         else:
-            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item]] # ok
-            larges = [all[i] for i in xrange(len(all)) if large[0] in all[i][item]] # ok
+            smalls = [all[i] for i in xrange(len(all)) if not large[0] in all[i][item]]
+            larges = [all[i] for i in xrange(len(all)) if large[0] in all[i][item] and not (large[1] and large[1] in all[i][item])]
             extras = []
     else:
         if extra:
-            smalls = []
+            smalls = [all[i] for i in xrange(len(all)) if not any(e[0] in all[i][item] for e in extra)]
             larges = []
-            extras = []
+            extras = [all[i] for i in xrange(len(all)) if any(e[0] in all[i][item] for e in extra)]
         else:
-            smalls = all[:][:] # ok
+            smalls = all[:][:]
             larges = []
             extras = []
 
     orders = [order[:], order[:], extra[:]]
-    print
-    print smalls
-    print
-    print larges
-    print
-    print extras
 
-#    out = [[[] for i in xrange(len(order))] for j in xrange(len(smalls) + len(larges))]
-#    servingtypes = [smalls[:][:], larges[:][:], extras[:][:],]
-#    for i, servingtype in enumerate(servingtypes):
-#        for j in servingtype:
-#            for k, ord in enumerate(order):
-#                if ord[0] in j['Item']:
-#                    if out[i][k]:
-#                        out[i][k] = str(int(out[i][k]) + int(j['Quantity']))
-#                        out[i][k] = str(int(out[i][k]) + int(j['Quantity']))
-#                    else:
-#                        out[i][k] = []
+    servingtypes = [smalls[:][:], larges[:][:], extras[:][:],]
+    out = [[[] for i in xrange(len(ordr)) if servingtypes[j]] for j, ordr in enumerate(orders)]
+    for i, servingtype in enumerate(servingtypes):
+        ordr = orders[i][:]
+        for serving in servingtype:
+            # Find items and include in out list, consolidating if necessary.
+            for k, o in enumerate(ordr):
+                if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                    if out[i][k]:
+                        out[i][k][quantity] = str(int(out[i][k][quantity]) + int(serving[quantity]))
+                        out[i][k][value] = str(float(out[i][k][value]) + float(serving[value]))
+                    else:
+                        out[i][k] = serving[:]
+                        out[i][k][item] = o[2] + ' ' + large[2] if large and i == 1 else o[2]
 
+        # Find missing order items and include as empty.
+        if servingtype:
+            for k, o in enumerate(ordr):
+                if not out[i][k]:
+                    out[i][k] = ['', '', o[2] + ' ' + large[2] if large and i == 1 else o[2], '0', '0.00',]
 
+    # Return organized data as dictionary.
     d2 = {}
     for c in cols:
         d2[c] = []
+
+    print out
 
     return d2
 

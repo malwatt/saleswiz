@@ -4,6 +4,8 @@
 import os
 import glob
 import csv
+import sys
+import subprocess
 
 from collections import OrderedDict
 
@@ -334,8 +336,27 @@ def output_new(d, sales_clean):
 
 
 def main():
-    sales_file_raw = 'we20131006sales.csv'
+    try:
+        sales_file_in = sys.argv[1]
+    except:
+        print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
+        return
+
     reports_dir = 'C:\\Users\\Malky\\Documents\\BD\\Reports'
+
+    extension = sales_file_in.split('.')[-1]
+    if extension == 'xls':
+        convert = subprocess.Popen(
+            ['soffice.exe', '--headless', '--invisible', '--convert-to', 'csv', '--outdir', reports_dir, reports_dir + '\\' + sales_file_in],
+             executable='C:\Program Files (x86)\LibreOffice 4\program\soffice.exe')
+        convert.wait()
+        if convert.returncode != 0:
+            print 'Conversion of xls file to csv failed.'
+            return
+        sales_file_raw = ''.join(sales_file_in.split('.')[:-1]) + '.csv'
+    elif extension !='csv':
+        print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
+        return
 
     reports_dir = reports_dir.decode('utf-8').replace('\\','/')
     sales_file_clean = sales_file_raw.split('.')[0] + '_clean.csv'

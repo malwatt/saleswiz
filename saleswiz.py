@@ -11,17 +11,74 @@ from collections import OrderedDict
 # Chosen order for subcategories.
 # Position 0 is search term, 1 is search exclude term, 2 is chosen name.
 # Same for tuples for finding and naming large size.
-beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),]
+beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),
+              ('STELLA', '', 'STELLA'), ('BLUE', '', 'BLUE MOON'),
+              ('STONE IPA', '', 'STONE IPA'), ('SMITH X', '', 'ALESMITH X'),
+              ('ROCKET', '', 'RED ROCKET'), ('ROTAT', '', 'ROTATOR'),
+              ('CASTLE', '', 'NEWCASTLE'), ('XX', '', 'DOS XX'),
+              ('HEIN', '', 'HEINEKEN'), ('TOP BELG', '', 'SHOCK TOP BELGIAN'),
+              ('NEGR', '', 'NEGRA MODELO'), ('BUD', '', 'BUD LIGHT'),
+              ('ARDEN', '', 'HOEGAARDEN'), ('TOP IPA', '', 'SHOCK TOP IPA'),]
 beer_extra = [('SAMPLE', '', 'BEER SAMPLER'),]
 beer_large = ('CHER', '', 'PITCHER')
 
-wine_order = [('CHAR', '', 'PENFOLDS CHARDONNAY'),]
+wine_order = [('CHAR', '', 'PENFOLDS CHARDONNAY'), ('LING', '', 'COLUMBIA RIESLING'),
+              ('POLA', '', 'COPPOLA PINOT GRIGIO'), ('MOSC', '', 'MOSCATO'),
+              ('FOLDS CAB', '', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
+              ('BERIN', '', 'BERINGER PINOT NOIR'), ('STRONG', '', 'RODNEY STRONG CABERNET'),
+              ('MALB', '', 'TAMARI MALBEC'),]
 wine_extra = [('SPARK', '', 'MIONETTO SPARKING SPLIT'),]
 wine_large = ('BOTT', '', 'BOTTLE')
 
-burgers_order = [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),]
+burgers_order = [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),
+                 ('TURK', '', 'TURKEY'), ('CHICK', '', 'CHICKEN'),
+                 ('HAWAII', '', 'HAWAII FIVE-O'), ('MUSH', '', 'MUSHROOM MADNESS'),
+                 ('LAMB', '', 'LAMB'),
+                 ('ADD CLA', '', 'ADD CLASSIC PATTY'), ('ADD DAD', '', 'ADD DADDY PATTY'),
+                 ('ADD TUR', '', 'ADD TURKEY'), ('ADD CHI', '', 'ADD CHICKEN PATTY'),
+                 ('ADD HAW', '', 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', '', 'ADD MUSHROOM MADNESS PATTY'),
+                 ('ADD LAM', '', 'ADD LAMB PATTY'),]
 burgers_extra = [('VEG', '', 'VEGGIE'), ('BELLO', '', 'PORTABELLO'),]
 burgers_large = ('1/2', '', '1/2 LB')
+
+sandwiches_order = [('CHICK', '', 'CHICKEN'), ('SALM', '', 'SALMON'),
+                    ('MIGNON', '', 'FILET MIGNON'), ('CHEE', '', 'GRILLED CHEESE'),
+                    ('BLT', '', 'BLT'), ('PORK', '', 'PORK TENDERLOIN'),]
+
+dawgs_sausages_order = [('BIG', '', 'BIG DAWG'), ('BACON', '', 'SMOKED BACON DAWG'),
+                          ('ANTON', '', 'SAN ANTONIO CHILI DAWG'), ('CHEE', '', 'NACHO CHEESE DAWG'),
+                          ('BRAT', '', 'BRATWURST SAUSAGE'), ('ITAL', '', 'SWEET ITALIAN SAUSAGE'),
+                          ('ANDO', '', 'ANDOUILLE SAUSAGE'), ('CHICK', '', 'CHICKEN SOUTHWEST CALIENTE SAUSAGE'),]
+
+chicken_wings_order = [('6 PIEC', '', '6 PIECES'), ('12 PIEC', '', '12 PIECES'),
+                       ('18 PIEC', '', '18 PIECES'), ('50 PIE', '', '50 PIECES'),]
+
+fries_rings_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
+                       ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
+                       ('TRIO', 'GARL', 'DADDY TRIO'), ('TRIO GA', '', 'DADDY TRIO GARLIC'),
+                       ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
+                       ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
+
+combo_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
+               ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
+               ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
+               ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
+
+drinks_order = [('SMAL', '', 'SMALL DRINK'), ('LARG', '', 'LARGE DRINK'),
+                ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
+                ('HOT TEA', '', 'HOT TEA'), ('ICE', '', 'ICED TEA'),
+                ('WATER', '', 'BOTTLED WATER'),]
+
+desserts_order = [('VANIL', '', 'VANILLA SHAKE'), ('CHOC', '', 'CHOCOLATE SHAKE'),
+                  ('STRAW', '', 'STRAWBERRY SHAKE'), ('ROOT', '', 'ROOTBEER FLOAT SHAKE'),
+                  ('ADD NUT', '', 'ADD NUTELLA'), ('ADD BAN', '', 'ADD BANANA'),
+                  ('ADD PEA', '', 'ADD PEANUT BUTTER'), ('CREAM', '', 'SCOOP OF ICE CREAM'),
+                  ('ADD SCO', '', 'ADD SCOOP OF ICE CREAM'), ('FUDGE', '', 'HOT FUDGE SUNDAE'),
+                  ('SPLIT', '', 'BANANA SPLIT'), ('CAKE', '', 'CAKE POP'),]
+
+kids_menu_order = [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CHEESE BURGER'),
+                   ('DAWG', '', 'KIDS DAWG'), ('LED CHEE', '', 'KIDS GRILLED CHEESE'),
+                   ('CRISP', '', 'KIDS CHICKEN CRISPERS'), ('MILK', '', 'KIDS MILK'),]
 
 merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
 
@@ -36,7 +93,7 @@ keys = ['Category', 'Subcategory', 'Item', 'Col03', 'Col04', 'Col05', 'Col06',
 cols = ['Category', 'Subcategory', 'Item', 'Quantity', 'Value',]
 
 # Search terms for rows in input file to exclude.
-excludes = ['FIRE GRI', 'Summary', 'Report', 'Description', 'Page', 'PRINTED',]
+excludes = ['FIRE GRI', 'SUMMARY', 'REPORT', 'DESCRIPTION', 'PAGE', 'PRINTED',]
 
 
 def parse_sales(sales_raw):
@@ -46,13 +103,30 @@ def parse_sales(sales_raw):
     beer = {}
     wine = {}
     burgers = {}
+    sandwiches = {}
+    dawgs_sausages = {}
+    chicken_wings = {}
+    fries_rings = {}
+    combo = {}
+    drinks = {}
+    desserts = {}
+    kids_menu = {}
     merchandise = {}
+
     for c in cols:
         d[c] = []
         d2[c] = []
         beer[c] = []
         wine[c] = []
         burgers[c] = []
+        sandwiches[c] = []
+        dawgs_sausages[c] = []
+        chicken_wings[c] = []
+        fries_rings[c] = []
+        combo[c] = []
+        drinks[c] = []
+        desserts[c] = []
+        kids_menu[c] = []
         merchandise[c] = []
 
     try:
@@ -68,7 +142,7 @@ def parse_sales(sales_raw):
     category = ''
     subcategory = ''
     for r in xrange(len(d[cols[0]])):
-        row = [d[c][r] for c in cols]
+        row = [d[c][r].upper() for c in cols]
 
         # Ignore empty rows.
         if not any(row):
@@ -107,6 +181,30 @@ def parse_sales(sales_raw):
             elif subcategory == 'BURGERS':
                 burgers2 = organize(burgers, burgers_order, burgers_extra, burgers_large)
                 [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
+            elif subcategory == 'SANDWICHES':
+                sandwiches2 = organize(sandwiches, sandwiches_order)
+                [d2[c].append(sandwiches2[c][r2]) for r2 in xrange(len(sandwiches2[cols[0]])) for c in cols]
+            elif subcategory == 'DAWGS & SAUSAGES':
+                dawgs_sausages2 = organize(dawgs_sausages, dawgs_sausages_order)
+                [d2[c].append(dawgs_sausages2[c][r2]) for r2 in xrange(len(dawgs_sausages2[cols[0]])) for c in cols]
+            elif subcategory == 'CHICKEN WINGS':
+                chicken_wings2 = organize(chicken_wings, chicken_wings_order)
+                [d2[c].append(chicken_wings2[c][r2]) for r2 in xrange(len(chicken_wings2[cols[0]])) for c in cols]
+            elif subcategory == 'FRIES & RINGS':
+                fries_rings2 = organize(fries_rings, fries_rings_order)
+                [d2[c].append(fries_rings2[c][r2]) for r2 in xrange(len(fries_rings2[cols[0]])) for c in cols]
+            elif subcategory == 'COMBO':
+                combo2 = organize(combo, combo_order)
+                [d2[c].append(combo2[c][r2]) for r2 in xrange(len(combo2[cols[0]])) for c in cols]
+            elif subcategory == 'DRINKS':
+                drinks2 = organize(drinks, drinks_order)
+                [d2[c].append(drinks2[c][r2]) for r2 in xrange(len(drinks2[cols[0]])) for c in cols]
+            elif subcategory == 'DESSERTS':
+                desserts2 = organize(desserts, desserts_order)
+                [d2[c].append(desserts2[c][r2]) for r2 in xrange(len(desserts2[cols[0]])) for c in cols]
+            elif subcategory == 'KIDS MENU':
+                kids_menu2 = organize(kids_menu, kids_menu_order)
+                [d2[c].append(kids_menu2[c][r2]) for r2 in xrange(len(kids_menu2[cols[0]])) for c in cols]
             elif subcategory == 'MERCHANDISE':
                 merchandise2 = organize(merchandise, merchandise_order)
                 [d2[c].append(merchandise2[c][r2]) for r2 in xrange(len(merchandise2[cols[0]])) for c in cols]
@@ -123,19 +221,44 @@ def parse_sales(sales_raw):
             elif subcategory == 'BURGERS':
                 [burgers[c].append(d[c][r]) for c in cols]
                 continue
+            elif subcategory == 'SANDWICHES':
+                [sandwiches[c].append(d[c][r]) for c in cols]
+                continue
+            if subcategory == 'DAWGS & SAUSAGES':
+                [dawgs_sausages[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'CHICKEN WINGS':
+                [chicken_wings[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'FRIES & RINGS':
+                [fries_rings[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'COMBO':
+                [combo[c].append(d[c][r]) for c in cols]
+                continue
+            if subcategory == 'DRINKS':
+                [drinks[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'DESSERTS':
+                [desserts[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'KIDS MENU':
+                [kids_menu[c].append(d[c][r]) for c in cols]
+                continue
             elif subcategory == 'MERCHANDISE':
                 [merchandise[c].append(d[c][r]) for c in cols]
                 continue
 
+
         # Add row to output dictionary.
-        [d2[c].append(d[c][r]) for c in cols]
+        [d2[c].append(d[c][r].upper()) for c in cols]
 
     return d2
 
 
 def organize(d, order, extra=[], large=()):
     """Organize report subcategories into consistent items and order."""
-    all = [[d[c][r] for c in cols] for r in xrange(len(d[cols[0]]))]
+    all = [[d[c][r].upper() for c in cols] for r in xrange(len(d[cols[0]]))]
     item = cols.index('Item')
     quantity = cols.index('Quantity')
     value = cols.index('Value')
@@ -211,7 +334,7 @@ def output_new(d, sales_clean):
 
 
 def main():
-    sales_file_raw = '201309sales.csv'
+    sales_file_raw = 'we20131006sales.csv'
     reports_dir = 'C:\\Users\\Malky\\Documents\\BD\\Reports'
 
     reports_dir = reports_dir.decode('utf-8').replace('\\','/')

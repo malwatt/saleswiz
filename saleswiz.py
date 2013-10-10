@@ -1,6 +1,11 @@
 # Python script to organize PixelPOS "Profit by Summary Group" sales reports
 # into a useful and consistent format.
 
+# To do:
+# 1. Loop to read, convert and process all reports in folder.
+# 2. Find items misplaced in subcategories, like Jr. Crispers in Chicken Wings
+#    and place in correct subcategories.
+
 import os
 import glob
 import csv
@@ -63,8 +68,8 @@ fries_rings_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'G
 
 combo_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
                ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
-               ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
-               ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
+               ('LI CHEESE', 'GA', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
+               ('HO CHEESE', 'GA', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
 
 drinks_order = [('SMAL', '', 'SMALL DRINK'), ('LARG', '', 'LARGE DRINK'),
                 ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
@@ -83,6 +88,9 @@ kids_menu_order = [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CH
                    ('CRISP', '', 'KIDS CHICKEN CRISPERS'), ('MILK', '', 'KIDS MILK'),]
 
 merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
+
+# Items considered misplaced, with exclude term and chosen name and subcategory.
+out_of_order = [('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU'),]
 
 # PixelPOS "Profit by Summary Group" sales report columns.
 # Nothing is in Cost, % Cost or Profit columns so ignoring.
@@ -175,40 +183,43 @@ def parse_sales(sales_raw):
         # Catch end of subcategory and organize if needed.
         if d['Subcategory'][r] and any(row[2:]):
             if subcategory == 'BEER':
-                beer2 = organize(beer, beer_order, beer_extra, beer_large)
+                beer2 = organize(sales_raw, subcategory, beer, beer_order, beer_extra, beer_large)  # MAW misplaced=[]
                 [d2[c].append(beer2[c][r2]) for r2 in xrange(len(beer2[cols[0]])) for c in cols]
+                #if subcategory in misplaced:  # MAW
+                #    Insert or consolidate in correct d[c][r].
+                #    Delete item from misplaced.
             elif subcategory == 'WINE':
-                wine2 = organize(wine, wine_order, wine_extra, wine_large)
+                wine2 = organize(sales_raw, subcategory, wine, wine_order, wine_extra, wine_large)
                 [d2[c].append(wine2[c][r2]) for r2 in xrange(len(wine2[cols[0]])) for c in cols]
             elif subcategory == 'BURGERS':
-                burgers2 = organize(burgers, burgers_order, burgers_extra, burgers_large)
+                burgers2 = organize(sales_raw, subcategory, burgers, burgers_order, burgers_extra, burgers_large)
                 [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
             elif subcategory == 'SANDWICHES':
-                sandwiches2 = organize(sandwiches, sandwiches_order)
+                sandwiches2 = organize(sales_raw, subcategory, sandwiches, sandwiches_order)
                 [d2[c].append(sandwiches2[c][r2]) for r2 in xrange(len(sandwiches2[cols[0]])) for c in cols]
             elif subcategory == 'DAWGS & SAUSAGES':
-                dawgs_sausages2 = organize(dawgs_sausages, dawgs_sausages_order)
+                dawgs_sausages2 = organize(sales_raw, subcategory, dawgs_sausages, dawgs_sausages_order)
                 [d2[c].append(dawgs_sausages2[c][r2]) for r2 in xrange(len(dawgs_sausages2[cols[0]])) for c in cols]
             elif subcategory == 'CHICKEN WINGS':
-                chicken_wings2 = organize(chicken_wings, chicken_wings_order)
+                chicken_wings2 = organize(sales_raw, subcategory, chicken_wings, chicken_wings_order)
                 [d2[c].append(chicken_wings2[c][r2]) for r2 in xrange(len(chicken_wings2[cols[0]])) for c in cols]
             elif subcategory == 'FRIES & RINGS':
-                fries_rings2 = organize(fries_rings, fries_rings_order)
+                fries_rings2 = organize(sales_raw, subcategory, fries_rings, fries_rings_order)
                 [d2[c].append(fries_rings2[c][r2]) for r2 in xrange(len(fries_rings2[cols[0]])) for c in cols]
             elif subcategory == 'COMBO':
-                combo2 = organize(combo, combo_order)
+                combo2 = organize(sales_raw, subcategory, combo, combo_order)
                 [d2[c].append(combo2[c][r2]) for r2 in xrange(len(combo2[cols[0]])) for c in cols]
             elif subcategory == 'DRINKS':
-                drinks2 = organize(drinks, drinks_order)
+                drinks2 = organize(sales_raw, subcategory, drinks, drinks_order)
                 [d2[c].append(drinks2[c][r2]) for r2 in xrange(len(drinks2[cols[0]])) for c in cols]
             elif subcategory == 'DESSERTS':
-                desserts2 = organize(desserts, desserts_order)
+                desserts2 = organize(sales_raw, subcategory, desserts, desserts_order)
                 [d2[c].append(desserts2[c][r2]) for r2 in xrange(len(desserts2[cols[0]])) for c in cols]
             elif subcategory == 'KIDS MENU':
-                kids_menu2 = organize(kids_menu, kids_menu_order)
+                kids_menu2 = organize(sales_raw, subcategory, kids_menu, kids_menu_order)
                 [d2[c].append(kids_menu2[c][r2]) for r2 in xrange(len(kids_menu2[cols[0]])) for c in cols]
             elif subcategory == 'MERCHANDISE':
-                merchandise2 = organize(merchandise, merchandise_order)
+                merchandise2 = organize(sales_raw, subcategory, merchandise, merchandise_order)
                 [d2[c].append(merchandise2[c][r2]) for r2 in xrange(len(merchandise2[cols[0]])) for c in cols]
             subcategory = ''
 
@@ -251,14 +262,13 @@ def parse_sales(sales_raw):
                 [merchandise[c].append(d[c][r]) for c in cols]
                 continue
 
-
         # Add row to output dictionary.
         [d2[c].append(d[c][r].upper()) for c in cols]
 
     return d2
 
 
-def organize(d, order, extra=[], large=()):
+def organize(sales_raw, subcategory, d, order, extra=[], large=()):  # MAW misplaced=[]
     """Organize report subcategories into consistent items and order."""
     all = [[d[c][r].upper() for c in cols] for r in xrange(len(d[cols[0]]))]
     item = cols.index('Item')
@@ -292,14 +302,33 @@ def organize(d, order, extra=[], large=()):
         ordr = orders[i][:]
         for serving in servingtype:
             # Find items and include in out list, consolidating if necessary.
+            found = False
             for k, o in enumerate(ordr):
                 if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                    found = True
                     if out[i][k]:
                         out[i][k][quantity] = str(int(out[i][k][quantity]) + int(serving[quantity]))
                         out[i][k][value] = str(float(out[i][k][value]) + float(serving[value]))
                     else:
                         out[i][k] = serving[:]
                         out[i][k][item] = o[2] + ' ' + large[2] if large and i == 1 else o[2]
+
+            # If item not found, check if it's a known misplaced item.
+            if not found:
+                found_out = False
+                for k, o in enumerate(out_of_order):
+                    if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                        found_out = True
+                        print ('File "%s": Moving Subcategory "%s" item "%s" to Subcategory "%s" as item "%s".' %
+                               (sales_raw.split('/')[-1], subcategory, serving[item], o[3], o[2]))
+                        # Insert or consolidate into appropriate d[c][r].
+                        #misplaced.append(o[3], o[2], serving)  # MAW
+                        break
+
+                # Notify if item not known.
+                if not found_out:
+                    print ('File "%s": Subcategory "%s" item "%s" not known.' %
+                           (sales_raw.split('/')[-1], subcategory, serving[item]))
 
         # Find missing order items and include as empty.
         if servingtype:
@@ -317,7 +346,7 @@ def organize(d, order, extra=[], large=()):
             for k, c in enumerate(cols):
                 [d2[c].append(serving[k])]
 
-    return d2
+    return d2  # MAW , misplaced
 
 
 def output_new(d, sales_clean):

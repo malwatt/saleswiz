@@ -3,12 +3,9 @@
 
 # To do:
 # 1. Loop to read, convert and process all reports in folder.
-# 2. Find items misplaced in subcategories, like Jr. Crispers in Chicken Wings
-#    and place in correct subcategories.
-# 3. Add Modifiers and Salads orders.
-# 4. Put orders in dictionary, with empty extra and large if needed, send to
-#    organize function using key, and with just a temporary dictionary for
-#    each subcatergory.
+# 2. Place misplaced items in correct subcategories.
+# 3. Make sure all historical items are getting caught properly.
+# 4. Order categories and subcategories.
 
 import os
 import glob
@@ -22,119 +19,175 @@ from collections import OrderedDict
 # Chosen order for subcategories.
 # Position 0 is search term, 1 is search exclude term, 2 is chosen name.
 # Same for tuples for finding and naming large size.
-beer_order = [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),
-              ('STELLA', '', 'STELLA'), ('BLUE', '', 'BLUE MOON'),
-              ('STONE IPA', '', 'STONE IPA'), ('SMITH X', '', 'ALESMITH X'),
-              ('ROCKET', '', 'RED ROCKET'), ('ROTAT', '', 'ROTATOR'),
-              ('CASTLE', '', 'NEWCASTLE'), ('XX', '', 'DOS XX'),
-              ('HEIN', '', 'HEINEKEN'), ('TOP BELG', '', 'SHOCK TOP BELGIAN'),
-              ('NEGR', '', 'NEGRA MODELO'), ('BUD', '', 'BUD LIGHT'),
-              ('ARDEN', '', 'HOEGAARDEN'), ('TOP IPA', '', 'SHOCK TOP IPA'),]
-beer_extra = [('SAMPLE', '', 'BEER SAMPLER'),]
-beer_large = ('CHER', '', 'PITCHER')
+subcategories = {
+    'BEER': {
+        'order': [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),
+                  ('STELLA', '', 'STELLA'), ('BLUE', '', 'BLUE MOON'),
+                  ('STONE IPA', '', 'STONE IPA'), ('SMITH X', '', 'ALESMITH X'),
+                  ('ROCKET', '', 'RED ROCKET'), ('ROTAT', '', 'ROTATOR'),
+                  ('CASTLE', '', 'NEWCASTLE'), ('XX', '', 'DOS XX'),
+                  ('HEIN', '', 'HEINEKEN'), ('TOP BELG', '', 'SHOCK TOP BELGIAN'),
+                  ('NEGR', '', 'NEGRA MODELO'), ('BUD', '', 'BUD LIGHT'),
+                  ('ARDEN', '', 'HOEGAARDEN'), ('TOP IPA', '', 'SHOCK TOP IPA'),],
+        'extra': [('SAMPLE', '', 'BEER SAMPLER'),],
+        'large': ('CHER', '', 'PITCHER'),},
 
-wine_order = [('CHAR', '', 'PENFOLDS CHARDONNAY'), ('LING', '', 'COLUMBIA RIESLING'),
-              ('POLA', '', 'COPPOLA PINOT GRIGIO'), ('MOSC', '', 'MOSCATO'),
-              ('CABER', 'STRONG', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
-              ('BERIN', '', 'BERINGER PINOT NOIR'), ('STRONG', '', 'RODNEY STRONG CABERNET'),
-              ('MALB', '', 'TAMARI MALBEC'),]
-wine_extra = [('SPARK', '', 'MIONETTO SPARKING SPLIT'), ('CORKA', '', 'CORKAGE FEE'),]
-wine_large = ('BOTT', '', 'BOTTLE')
+    'WINE': {
+        'order': [('CHAR', '', 'PENFOLDS CHARDONNAY'), ('LING', '', 'COLUMBIA RIESLING'),
+                  ('POLA', '', 'COPPOLA PINOT GRIGIO'), ('MOSC', '', 'MOSCATO'),
+                  ('CABER', 'STRONG', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
+                  ('BERIN', '', 'BERINGER PINOT NOIR'), ('STRONG', '', 'RODNEY STRONG CABERNET'),
+                  ('MALB', '', 'TAMARI MALBEC'),],
+        'extra': [('SPARK', '', 'MIONETTO SPARKING SPLIT'), ('CORKA', '', 'CORKAGE FEE'),],
+        'large': ('BOTT', '', 'BOTTLE'),},
 
-burgers_order = [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),
-                 ('TURK', '', 'TURKEY'), ('CHICK', '', 'CHICKEN'),
-                 ('HAWAII', '', 'HAWAII FIVE-O'), ('MUSH', '', 'MUSHROOM MADNESS'),
-                 ('LAMB', '', 'LAMB'),
-                 ('ADD CLA', '', 'ADD CLASSIC PATTY'), ('ADD DAD', '', 'ADD DADDY PATTY'),
-                 ('ADD TUR', '', 'ADD TURKEY'), ('ADD CHI', '', 'ADD CHICKEN PATTY'),
-                 ('ADD HAW', '', 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', '', 'ADD MUSHROOM MADNESS PATTY'),
-                 ('ADD LAM', '', 'ADD LAMB PATTY'),]
-burgers_extra = [('VEG', '', 'VEGGIE'), ('BELLO', '', 'PORTABELLO'),]
-burgers_large = ('1/2', '', '1/2 LB')
+    'BURGERS': {
+        'order': [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),
+                  ('TURK', '', 'TURKEY'), ('CHICK', '', 'CHICKEN'),
+                  ('HAWAII', '', 'HAWAII FIVE-O'), ('MUSH', '', 'MUSHROOM MADNESS'),
+                  ('LAMB', '', 'LAMB'),
+                  ('ADD CLA', '', 'ADD CLASSIC PATTY'), ('ADD DAD', '', 'ADD DADDY PATTY'),
+                  ('ADD TUR', '', 'ADD TURKEY'), ('ADD CHI', '', 'ADD CHICKEN PATTY'),
+                  ('ADD HAW', '', 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', '', 'ADD MUSHROOM MADNESS PATTY'),
+                  ('ADD LAM', '', 'ADD LAMB PATTY'),],
+        'extra': [('VEG', '', 'VEGGIE'), ('BELLO', '', 'PORTABELLO'),],
+        'large': ('1/2', '', '1/2 LB'),},
 
-sandwiches_order = [('CHICK', '', 'CHICKEN'), ('SALM', '', 'SALMON'),
-                    ('MIGNON', '', 'FILET MIGNON'), ('CHEE', '', 'GRILLED CHEESE'),
-                    ('BLT', '', 'BLT'), ('PORK', '', 'PORK TENDERLOIN'),]
+    'SANDWICHES': {
+        'order': [('CHICK', 'EXTRA', 'CHICKEN'), ('SALM', 'EXTRA', 'SALMON'),
+                  ('MIGNON', 'EXTRA', 'FILET MIGNON'),  ('PORK', 'EXTRA', 'PORK TENDERLOIN'),
+                  ('CHEE', '', 'GRILLED CHEESE'), ('BLT', '', 'BLT'),
+                  ('EXTRA CHICK', '', 'EXTRA CHICKEN'), ('EXTRA SALM', '', 'EXTRA SALMON'),
+                  ('EXTRA FILET M', '', 'EXTRA FILET MIGNON'),  ('EXTRA PORK', '', 'EXTRA PORK TENDERLOIN'),],
+        'extra': [],
+        'large': (),},
 
-dawgs_sausages_order = [('BIG', '', 'BIG DAWG'), ('BACON', '', 'SMOKED BACON DAWG'),
-                          ('ANTON', '', 'SAN ANTONIO CHILI DAWG'), ('CHEE', '', 'NACHO CHEESE DAWG'),
-                          ('BRAT', '', 'BRATWURST SAUSAGE'), ('ITAL', '', 'SWEET ITALIAN SAUSAGE'),
-                          ('ANDO', '', 'ANDOUILLE SAUSAGE'), ('CHICK', '', 'CHICKEN SOUTHWEST CALIENTE SAUSAGE'),]
+    'DAWGS & SAUSAGES': {
+        'order': [('BIG', '', 'BIG DAWG'), ('BACON', '', 'SMOKED BACON DAWG'),
+                  ('ANTON', '', 'SAN ANTONIO CHILI DAWG'), ('CHEE', '', 'NACHO CHEESE DAWG'),
+                  ('BRAT', '', 'BRATWURST SAUSAGE'), ('ITAL', '', 'SWEET ITALIAN SAUSAGE'),
+                  ('ANDO', '', 'ANDOUILLE SAUSAGE'), ('CHICK', '', 'CHICKEN SOUTHWEST CALIENTE SAUSAGE'),],
+        'extra': [],
+        'large': (),},
 
-chicken_wings_order = [('6 PIEC', '', '6 PIECES'), ('12 PIEC', '', '12 PIECES'),
-                       ('18 PIEC', '', '18 PIECES'), ('50 PIE', '', '50 PIECES'),]
+    'CHICKEN WINGS': {
+        'order': [('6 PIEC', '', '6 PIECES'), ('12 PIEC', '', '12 PIECES'),
+                  ('18 PIEC', '', '18 PIECES'), ('50 PIE', '', '50 PIECES'),],
+        'extra': [],
+        'large': (),},
 
-fries_rings_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
-                       ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
-                       ('TRIO', 'GARL', 'DADDY TRIO'), ('TRIO GA', '', 'DADDY TRIO GARLIC'),
-                       ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
-                       ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
+    'FRIES & RINGS': {
+        'order': [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
+                  ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
+                  ('TRIO', 'GARL', 'DADDY TRIO'), ('TRIO GA', '', 'DADDY TRIO GARLIC'),
+                  ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
+                  ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),],
+        'extra': [],
+        'large': (),},
 
-combo_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
-               ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
-               ('LI CHEESE', 'GA', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
-               ('HO CHEESE', 'GA', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
+    'COMBO': {
+        'order': [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
+                  ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
+                  ('LI CHEESE', 'GA', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
+                  ('HO CHEESE', 'GA', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),],
+        'extra': [],
+        'large': (),},
 
-sides_salads_order = [('BIG', '', 'BIG 50'),
-                      ('SALAD', 'SIDE', 'SALAD'), ('SIDE SALAD', '', 'SIDE SALAD'),
-                      ('CHICK', '', 'ADD CHICKEN'), ('SALM', '', 'ADD SALMON'),
-                      ('MIGNON', '', 'ADD FILET MIGNON'), ('AVOC', '', 'ADD AVOCADO'),
-                      ('SLAW', 'LARGE', 'SMALL COLE SLAW'), ('SLAW', 'SMALL', 'LARGE COLE SLAW'),
-                      ('CHILI', 'LARGE', 'SMALL CHILI'), ('CHILI', 'SMALL', 'LARGE CHILI'),
-                      ('CRISP', 'LARGE', 'SMALL CHICKEN CRISPERS'), ('CRISP', 'SMALL', 'LARGE CHICKEN CRISPERS'),
-                      ('ZUC', '', 'ZUCCHINI DIPPERS'), ('POPP', '', 'MUSHROOM POPPERS'),
-                      ('CHIP', '', 'CHIPS'), ('BROWN', '', 'HASH BROWNS'),]
+    'SIDES & SALADS': {
+        'order': [('BIG', '', 'BIG 50'),
+                  ('SALAD', 'SIDE', 'SALAD'), ('SIDE SALAD', '', 'SIDE SALAD'),
+                  ('CHICK', '', 'ADD CHICKEN'), ('SALM', '', 'ADD SALMON'),
+                  ('MIGNON', '', 'ADD FILET MIGNON'), ('AVOC', '', 'ADD AVOCADO'),
+                  ('SLAW', 'LARGE', 'SMALL COLE SLAW'), ('SLAW', 'SMALL', 'LARGE COLE SLAW'),
+                  ('CHILI', 'LARGE', 'SMALL CHILI'), ('CHILI', 'SMALL', 'LARGE CHILI'),
+                  ('CRISP', 'LARGE', 'SMALL CHICKEN CRISPERS'), ('CRISP', 'SMALL', 'LARGE CHICKEN CRISPERS'),
+                  ('ZUC', '', 'ZUCCHINI DIPPERS'), ('POPP', '', 'MUSHROOM POPPERS'),
+                  ('CHIP', '', 'CHIPS'), ('BROWN', '', 'HASH BROWNS'),],
+        'extra': [],
+        'large': (),},
 
-modifiers_order = [('CHEDD', 'EXTRA', 'ADD CHEDDAR CHEESE'), ('AMER', 'EXTRA', 'ADD AMERICAN CHEESE'),
-                   ('SWISS', 'EXTRA', 'ADD SWISS CHEESE'), ('PEPPERJ', 'EXTRA', 'ADD PEPPERJACK CHEESE'),
-                   ('GORG', 'EXTRA', 'ADD GORGONZOLA CHEESE'), ('NACHO', 'EXTRA', 'ADD NACHO CHEESE'),
-                   ('BACON', 'EXTRA', 'ADD BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
-                   ('MUSH', 'EXTRA', 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', '', 'ADD GRILLED PINEAPPLE'),
-                   ('EGG', '', 'ADD FRIED EGG'),  ('CHILI', '', 'ADD CHILI'),
-                   ('RING', 'SUB', 'ADD ONION RINGS'), ('BELL', '', 'ADD GRILLED BELL PEPPER'),
-                   ('EXTRA CHEDD', '', 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', '', 'EXTRA AMERICAN CHEESE'),
-                   ('EXTRA SWISS', '', 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', '', 'EXTRA PEPPERJACK CHEESE'),
-                   ('EXTRA GORG', '', 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', '', 'EXTRA NACHO CHEESE'),
-                   ('EXTRA BACON', '', 'EXTRA BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
-                   ('EXTRA SAUT', '', 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
-                   ('SUB GAR', '', 'SUB GARLIC FRIES'), ('SWEET PO', '', 'SUB SWEET POTATO FRIES'),
-                   ('RING', 'TOP', 'SUB ONION RINGS'),
-                   ('SAUCE', '', 'ADD SAUCE'), ('BBQ', '', 'ADD BBQ SAUCE'),
-                   ('RANCH', '', 'ADD RANCH'), ('PESTO', '', 'ADD PESTO AIOLI'),
-                   ('DIJON', '', 'ADD DIJON-MAYO AIOLI'), ('MAYO', 'DIJ', 'ADD MAYO AIOLI'),
-                   ('KETCH', '', 'ADD SMOKED KETCHEP'),
-                   ('ONIONS-D', '', 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', '', 'ADD SAUERKRAUT - DAWGS'),
-                   ('SWEET PE', '', 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', '', 'ADD SPICY PEPPERS - DAWGS'),]
+    'MODIFIERS': {
+        'order': [('CHEDD', 'EXTRA', 'ADD CHEDDAR CHEESE'), ('AMER', 'EXTRA', 'ADD AMERICAN CHEESE'),
+                  ('SWISS', 'EXTRA', 'ADD SWISS CHEESE'), ('PEPPERJ', 'EXTRA', 'ADD PEPPERJACK CHEESE'),
+                  ('GORG', 'EXTRA', 'ADD GORGONZOLA CHEESE'), ('NACHO', 'EXTRA', 'ADD NACHO CHEESE'),
+                  ('BACON', 'EXTRA', 'ADD BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
+                  ('MUSH', 'EXTRA', 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', '', 'ADD GRILLED PINEAPPLE'),
+                  ('EGG', '', 'ADD FRIED EGG'),  ('CHILI', '', 'ADD CHILI'),
+                  ('RING', 'SUB', 'ADD ONION RINGS'), ('BELL', '', 'ADD GRILLED BELL PEPPER'),
+                  ('EXTRA CHEDD', '', 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', '', 'EXTRA AMERICAN CHEESE'),
+                  ('EXTRA SWISS', '', 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', '', 'EXTRA PEPPERJACK CHEESE'),
+                  ('EXTRA GORG', '', 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', '', 'EXTRA NACHO CHEESE'),
+                  ('EXTRA BACON', '', 'EXTRA BACON'), ('EXTRA AVOC', '', 'EXTRA AVOCADO'),
+                  ('EXTRA SAUT', '', 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
+                  ('SUB GAR', '', 'SUB GARLIC FRIES'), ('SWEET PO', '', 'SUB SWEET POTATO FRIES'),
+                  ('RING', 'TOP', 'SUB ONION RINGS'),
+                  ('SAUCE', 'BBQ', 'ADD SAUCE'), ('BBQ', '', 'ADD BBQ SAUCE'),
+                  ('RANCH', '', 'ADD RANCH'), ('PESTO', '', 'ADD PESTO AIOLI'),
+                  ('DIJON', '', 'ADD DIJON-MAYO AIOLI'), ('MAYO', 'DIJ', 'ADD MAYO AIOLI'),
+                  ('KETCH', '', 'ADD SMOKED KETCHEP'),
+                  ('ONIONS-D', '', 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', '', 'ADD SAUERKRAUT - DAWGS'),
+                  ('SWEET PE', '', 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', '', 'ADD SPICY PEPPERS - DAWGS'),],
+        'extra': [],
+        'large': (),},
 
-drinks_order = [('SMAL', '', 'SMALL SODA'), ('LARG', '', 'LARGE SODA'),
-                ('PITCH', '', 'PITCHER SODA'),
-                ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
-                ('HOT TEA', '', 'HOT TEA'), ('ICE', '', 'ICED TEA'),
-                ('WATER', '', 'BOTTLED WATER'), ('MONST', '', 'MONSTER'),]
+    'DRINKS': {
+        'order': [('SMAL', '', 'SMALL SODA'), ('LARG', '', 'LARGE SODA'),
+                  ('PITCH', '', 'PITCHER SODA'),
+                  ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
+                  ('HOT TEA', '', 'HOT TEA'), ('ICE', '', 'ICED TEA'),
+                  ('WATER', '', 'BOTTLED WATER'), ('MONST', '', 'MONSTER'),],
+        'extra': [],
+        'large': (),},
 
-desserts_order = [('VANIL', '', 'VANILLA SHAKE'), ('CHOC', '', 'CHOCOLATE SHAKE'),
+    'DESSERTS': {
+        'order': [('VANIL', '', 'VANILLA SHAKE'), ('CHOC', '', 'CHOCOLATE SHAKE'),
                   ('STRAW', '', 'STRAWBERRY SHAKE'), ('ROOT', '', 'ROOTBEER FLOAT SHAKE'),
                   ('POLIT', '', 'NEAPOLITAN SHAKE'),
                   ('ADD NUT', '', 'ADD NUTELLA'), ('ADD BAN', '', 'ADD BANANA'),
                   ('ADD PEA', '', 'ADD PEANUT BUTTER'), ('CREAM', '', 'SCOOP OF ICE CREAM'),
                   ('ADD SCO', '', 'ADD SCOOP OF ICE CREAM'), ('FUDGE', '', 'HOT FUDGE SUNDAE'),
-                  ('SPLIT', '', 'BANANA SPLIT'), ('CAKE', '', 'CAKE POP'),]
+                  ('SPLIT', '', 'BANANA SPLIT'), ('CAKE', '', 'CAKE POP'),],
+        'extra': [],
+        'large': (),},
 
-kids_menu_order = [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CHEESE BURGER'),
-                   ('DAWG', '', 'KIDS DAWG'), ('LED CHEE', '', 'KIDS GRILLED CHEESE'),
-                   ('CRISP', '', 'KIDS CHICKEN CRISPERS'), ('MILK', '', 'KIDS MILK'),]
+    'KIDS MENU': {
+        'order': [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CHEESE BURGER'),
+                  ('DAWG', '', 'KIDS DAWG'), ('LED CHEE', '', 'KIDS GRILLED CHEESE'),
+                  ('CRISP', '', 'KIDS CHICKEN CRISPERS'), ('MILK', '', 'KIDS MILK'),],
+        'extra': [],
+        'large': (),},
 
-merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
+    'BREAKFAST SANDWICHES': {
+        'order': [('PLAIN', '', 'PLAIN OMELET'), ('WHITE', '', 'EGG WHITE OMELET'),
+                  ('CHOR', '', 'CHORIZO OMELET'), ('THREE', '', '3 CHEESE OMELET'),
+                  ('BAC', '', 'BACON ONION 3 CHEESE OMELET'),],
+        'extra': [],
+        'large': (),},
 
-# Items considered misplaced, with exclude term, chosen name and subcategory, large search term and chosen name, and 0 if small, 1 if small&large or 3 if an extra.
-out_of_order = [('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),
-                ('ADD 1/2 CLASSIC', '', 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+    'SUB PATTIES': {
+        'order': [],
+        'extra': [],
+        'large': (),},
+
+    'MERCHANDISE': {
+        'order': [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),],
+        'extra': [],
+        'large': (),},
+}
+
+# Items considered misplaced, with exclude term, chosen name and subcategory, large search term and chosen name,
+# and 0 if small, 1 if small&large or 3 if an extra.
+out_of_order = [('ADD 1/2 CLASSIC', '', 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
                 ('ADD 1/2 TURKEY', '', 'ADD TURKEY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('SUB DADDY PATTY', '', 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('SUB 1/2LB DADDY PATTY', '', 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('EXTRA CHICKEN', '', 'EXTRA CHICKEN', 'SANDWICHES', '', '', 0),
+                ('EXTRA FILET MIGNON', '', 'EXTRA FILET MIGNON', 'SANDWICHES', '', '', 0),
+                ('SUPERBOWL SPECIAL', '', '50 PIECES', 'CHICKEN WINGS', '', '', 0),
                 ('COMBO REGULAR FRIES', '', 'REGULAR FRIES', 'COMBO', '', '', 0),
                 ('COMBO SWEET POTATO', '', 'SWEET POTATO FRIES', 'COMBO', '', '', 0),
                 ('COMBO ONION RINGS', '', 'ONION RINGS', 'COMBO', '', '', 0),
-                ('EXTRA CHICKEN', '', 'EXTRA CHICKEN', 'SANDWICHES', '', '', 0),
-                ('EXTRA FILET MIGNON', '', 'EXTRA FILET MIGNON', 'SANDWICHES', '', '', 0),]
+                ('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),]
 
 # PixelPOS "Profit by Summary Group" sales report columns.
 # Nothing is in Cost, % Cost or Profit columns so ignoring.
@@ -154,38 +207,9 @@ def parse_sales(sales_raw):
     """Parse PixelPOS "Profit by Summary Group" sales report."""
     d = {}
     d2 = {}
-    beer = {}
-    wine = {}
-    burgers = {}
-    sandwiches = {}
-    dawgs_sausages = {}
-    chicken_wings = {}
-    fries_rings = {}
-    combo = {}
-    sides_salads = {}
-    modifiers = {}
-    drinks = {}
-    desserts = {}
-    kids_menu = {}
-    merchandise = {}
-
     for c in cols:
         d[c] = []
         d2[c] = []
-        beer[c] = []
-        wine[c] = []
-        burgers[c] = []
-        sandwiches[c] = []
-        dawgs_sausages[c] = []
-        chicken_wings[c] = []
-        fries_rings[c] = []
-        combo[c] = []
-        sides_salads[c] = []
-        modifiers[c] = []
-        drinks[c] = []
-        desserts[c] = []
-        kids_menu[c] = []
-        merchandise[c] = []
 
     try:
         with open(sales_raw, 'rb') as in_f:
@@ -224,6 +248,9 @@ def parse_sales(sales_raw):
                 continue
             else:
                 subcategory = d['Subcategory'][r]
+                dtemp = {}
+                for c in cols:
+                    dtemp[c] = []
 
         # Catch end of category.
         if d['Category'][r] and any(row[1:]):
@@ -231,94 +258,18 @@ def parse_sales(sales_raw):
 
         # Catch end of subcategory and organize.
         if d['Subcategory'][r] and any(row[2:]):
-            if subcategory == 'BEER':
-                beer2, misplaced = organize(sales_raw, subcategory, beer, beer_order, misplaced, beer_extra, beer_large)
-                [d2[c].append(beer2[c][r2]) for r2 in xrange(len(beer2[cols[0]])) for c in cols]
-            elif subcategory == 'WINE':
-                wine2, misplaced = organize(sales_raw, subcategory, wine, wine_order, misplaced, wine_extra, wine_large)
-                [d2[c].append(wine2[c][r2]) for r2 in xrange(len(wine2[cols[0]])) for c in cols]
-            elif subcategory == 'BURGERS':
-                burgers2, misplaced = organize(sales_raw, subcategory, burgers, burgers_order, misplaced, burgers_extra, burgers_large)
-                [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
-            elif subcategory == 'SANDWICHES':
-                sandwiches2, misplaced = organize(sales_raw, subcategory, sandwiches, sandwiches_order, misplaced)
-                [d2[c].append(sandwiches2[c][r2]) for r2 in xrange(len(sandwiches2[cols[0]])) for c in cols]
-            elif subcategory == 'DAWGS & SAUSAGES':
-                dawgs_sausages2, misplaced = organize(sales_raw, subcategory, dawgs_sausages, dawgs_sausages_order, misplaced)
-                [d2[c].append(dawgs_sausages2[c][r2]) for r2 in xrange(len(dawgs_sausages2[cols[0]])) for c in cols]
-            elif subcategory == 'CHICKEN WINGS':
-                chicken_wings2, misplaced = organize(sales_raw, subcategory, chicken_wings, chicken_wings_order, misplaced)
-                [d2[c].append(chicken_wings2[c][r2]) for r2 in xrange(len(chicken_wings2[cols[0]])) for c in cols]
-            elif subcategory == 'FRIES & RINGS':
-                fries_rings2, misplaced = organize(sales_raw, subcategory, fries_rings, fries_rings_order, misplaced)
-                [d2[c].append(fries_rings2[c][r2]) for r2 in xrange(len(fries_rings2[cols[0]])) for c in cols]
-            elif subcategory == 'COMBO':
-                combo2, misplaced = organize(sales_raw, subcategory, combo, combo_order, misplaced)
-                [d2[c].append(combo2[c][r2]) for r2 in xrange(len(combo2[cols[0]])) for c in cols]
-            elif subcategory == 'SIDES & SALADS':
-                sides_salads2, misplaced = organize(sales_raw, subcategory, sides_salads, sides_salads_order, misplaced)
-                [d2[c].append(sides_salads2[c][r2]) for r2 in xrange(len(sides_salads2[cols[0]])) for c in cols]
-            elif subcategory == 'MODIFIERS':
-                modifiers2, misplaced = organize(sales_raw, subcategory, modifiers, modifiers_order, misplaced)
-                [d2[c].append(modifiers2[c][r2]) for r2 in xrange(len(modifiers2[cols[0]])) for c in cols]
-            elif subcategory == 'DRINKS':
-                drinks2, misplaced = organize(sales_raw, subcategory, drinks, drinks_order, misplaced)
-                [d2[c].append(drinks2[c][r2]) for r2 in xrange(len(drinks2[cols[0]])) for c in cols]
-            elif subcategory == 'DESSERTS':
-                desserts2, misplaced = organize(sales_raw, subcategory, desserts, desserts_order, misplaced)
-                [d2[c].append(desserts2[c][r2]) for r2 in xrange(len(desserts2[cols[0]])) for c in cols]
-            elif subcategory == 'KIDS MENU':
-                kids_menu2, misplaced = organize(sales_raw, subcategory, kids_menu, kids_menu_order, misplaced)
-                [d2[c].append(kids_menu2[c][r2]) for r2 in xrange(len(kids_menu2[cols[0]])) for c in cols]
-            elif subcategory == 'MERCHANDISE':
-                merchandise2, misplaced = organize(sales_raw, subcategory, merchandise, merchandise_order, misplaced)
-                [d2[c].append(merchandise2[c][r2]) for r2 in xrange(len(merchandise2[cols[0]])) for c in cols]
+            dtemp2, misplaced = organize(sales_raw, subcategory, dtemp, misplaced)
+            [d2[c].append(dtemp2[c][r2]) for r2 in xrange(len(dtemp2[cols[0]])) for c in cols]
             subcategory = ''
 
-        # Catch any items needing organizing.
+        # Having caught any out of order data in a subcategory, ignore subcategory if it should have no data.
+        if d['Subcategory'][r] and not subcategories[d['Subcategory'][r]]['order']:
+            continue
+
+        # Catch any items for organizing.
         if d['Item'][r]:
-            if subcategory == 'BEER':
-                [beer[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'WINE':
-                [wine[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'BURGERS':
-                [burgers[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'SANDWICHES':
-                [sandwiches[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'DAWGS & SAUSAGES':
-                [dawgs_sausages[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'CHICKEN WINGS':
-                [chicken_wings[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'FRIES & RINGS':
-                [fries_rings[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'COMBO':
-                [combo[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'SIDES & SALADS':
-                [sides_salads[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'MODIFIERS':
-                [modifiers[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'DRINKS':
-                [drinks[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'DESSERTS':
-                [desserts[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'KIDS MENU':
-                [kids_menu[c].append(d[c][r]) for c in cols]
-                continue
-            elif subcategory == 'MERCHANDISE':
-                [merchandise[c].append(d[c][r]) for c in cols]
-                continue
+            [dtemp[c].append(d[c][r]) for c in cols]
+            continue
 
         # Add row to output dictionary.
         [d2[c].append(d[c][r].upper()) for c in cols]
@@ -331,9 +282,12 @@ def parse_sales(sales_raw):
     return d2, misplaced  # MAW
 
 
-def organize(sales_raw, subcategory, d, order, misplaced=[], extra=[], large=()):
+def organize(sales_raw, subcategory, d, misplaced=[]):
     """Organize report subcategories into consistent items and order."""
     all = [[d[c][r].upper() for c in cols] for r in xrange(len(d[cols[0]]))]
+    order = subcategories[subcategory]['order']
+    extra = subcategories[subcategory]['extra']
+    large = subcategories[subcategory]['large']
     item = cols.index('Item')
     quantity = cols.index('Quantity')
     value = cols.index('Value')
@@ -358,9 +312,9 @@ def organize(sales_raw, subcategory, d, order, misplaced=[], extra=[], large=())
             extras = []
 
     orders = [order[:], order[:], extra[:],]
-
+    include = [True if smalls or large else False, True if larges or large else False, True if extra else False]
     servingtypes = [smalls[:][:], larges[:][:], extras[:][:],]
-    out = [[[] for i in xrange(len(ordr)) if servingtypes[j]] for j, ordr in enumerate(orders)]
+    out = [[[] for i in xrange(len(ordr)) if include[j]] for j, ordr in enumerate(orders)]
     for i, servingtype in enumerate(servingtypes):
         ordr = orders[i][:]
         for serving in servingtype:
@@ -411,6 +365,12 @@ def organize(sales_raw, subcategory, d, order, misplaced=[], extra=[], large=())
             for k, o in enumerate(ordr):
                 if not out[i][k]:
                     out[i][k] = ['', '', o[2] + ' ' + large[2] if large and i == 1 else o[2], '0', '0.00',]
+        else:
+            if large and i <= 1 or extra and i == 2:
+                for k, o in enumerate(ordr):
+                    if not out[i][k]:
+                        out[i][k] = ['', '', o[2] + ' ' + large[2] if large and i == 1 else o[2], '0', '0.00',]
+
 
     # If there is a large size and there is a small or large misplaced item but not the opposite, include an empty opposite.
     misplaced2 = misplaced[:]
@@ -449,11 +409,15 @@ def organize(sales_raw, subcategory, d, order, misplaced=[], extra=[], large=())
 def fixnum(num):
     """Fix LibreOffice conversion glitch which sometimes puts '.' instead of
        ',' in numbers."""
-    bits = str(num).split('.')
-    if len(bits[-1]) > 2:
-        fixed = ','.join(bits)
+    snum = str(num)
+    bits = snum.split('.')
+    if len(bits) > 1:
+        if len(bits[-1]) > 2:
+            fixed = ','.join(bits)
+        else:
+            fixed = ','.join(bits[:-1]) + '.' + bits[-1]
     else:
-        fixed = ','.join(bits[:-1]) + '.' + bits[-1]
+        fixed = snum
 
     return fixed
 

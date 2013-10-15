@@ -35,10 +35,10 @@ beer_large = ('CHER', '', 'PITCHER')
 
 wine_order = [('CHAR', '', 'PENFOLDS CHARDONNAY'), ('LING', '', 'COLUMBIA RIESLING'),
               ('POLA', '', 'COPPOLA PINOT GRIGIO'), ('MOSC', '', 'MOSCATO'),
-              ('FOLDS CAB', '', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
+              ('CABER', 'STRONG', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
               ('BERIN', '', 'BERINGER PINOT NOIR'), ('STRONG', '', 'RODNEY STRONG CABERNET'),
               ('MALB', '', 'TAMARI MALBEC'),]
-wine_extra = [('SPARK', '', 'MIONETTO SPARKING SPLIT'),]
+wine_extra = [('SPARK', '', 'MIONETTO SPARKING SPLIT'), ('CORKA', '', 'CORKAGE FEE'),]
 wine_large = ('BOTT', '', 'BOTTLE')
 
 burgers_order = [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),
@@ -75,13 +75,46 @@ combo_order = [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC 
                ('LI CHEESE', 'GA', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
                ('HO CHEESE', 'GA', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),]
 
-drinks_order = [('SMAL', '', 'SMALL DRINK'), ('LARG', '', 'LARGE DRINK'),
+sides_salads_order = [('BIG', '', 'BIG 50'),
+                      ('SALAD', 'SIDE', 'SALAD'), ('SIDE SALAD', '', 'SIDE SALAD'),
+                      ('CHICK', '', 'ADD CHICKEN'), ('SALM', '', 'ADD SALMON'),
+                      ('MIGNON', '', 'ADD FILET MIGNON'), ('AVOC', '', 'ADD AVOCADO'),
+                      ('SLAW', 'LARGE', 'SMALL COLE SLAW'), ('SLAW', 'SMALL', 'LARGE COLE SLAW'),
+                      ('CHILI', 'LARGE', 'SMALL CHILI'), ('CHILI', 'SMALL', 'LARGE CHILI'),
+                      ('CRISP', 'LARGE', 'SMALL CHICKEN CRISPERS'), ('CRISP', 'SMALL', 'LARGE CHICKEN CRISPERS'),
+                      ('ZUC', '', 'ZUCCHINI DIPPERS'), ('POPP', '', 'MUSHROOM POPPERS'),
+                      ('CHIP', '', 'CHIPS'), ('BROWN', '', 'HASH BROWNS'),]
+
+modifiers_order = [('CHEDD', 'EXTRA', 'ADD CHEDDAR CHEESE'), ('AMER', 'EXTRA', 'ADD AMERICAN CHEESE'),
+                   ('SWISS', 'EXTRA', 'ADD SWISS CHEESE'), ('PEPPERJ', 'EXTRA', 'ADD PEPPERJACK CHEESE'),
+                   ('GORG', 'EXTRA', 'ADD GORGONZOLA CHEESE'), ('NACHO', 'EXTRA', 'ADD NACHO CHEESE'),
+                   ('BACON', 'EXTRA', 'ADD BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
+                   ('MUSH', 'EXTRA', 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', '', 'ADD GRILLED PINEAPPLE'),
+                   ('EGG', '', 'ADD FRIED EGG'),  ('CHILI', '', 'ADD CHILI'),
+                   ('RING', 'SUB', 'ADD ONION RINGS'), ('BELL', '', 'ADD GRILLED BELL PEPPER'),
+                   ('EXTRA CHEDD', '', 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', '', 'EXTRA AMERICAN CHEESE'),
+                   ('EXTRA SWISS', '', 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', '', 'EXTRA PEPPERJACK CHEESE'),
+                   ('EXTRA GORG', '', 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', '', 'EXTRA NACHO CHEESE'),
+                   ('EXTRA BACON', '', 'EXTRA BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
+                   ('EXTRA SAUT', '', 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
+                   ('SUB GAR', '', 'SUB GARLIC FRIES'), ('SWEET PO', '', 'SUB SWEET POTATO FRIES'),
+                   ('RING', 'TOP', 'SUB ONION RINGS'),
+                   ('SAUCE', '', 'ADD SAUCE'), ('BBQ', '', 'ADD BBQ SAUCE'),
+                   ('RANCH', '', 'ADD RANCH'), ('PESTO', '', 'ADD PESTO AIOLI'),
+                   ('DIJON', '', 'ADD DIJON-MAYO AIOLI'), ('MAYO', 'DIJ', 'ADD MAYO AIOLI'),
+                   ('KETCH', '', 'ADD SMOKED KETCHEP'),
+                   ('ONIONS-D', '', 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', '', 'ADD SAUERKRAUT - DAWGS'),
+                   ('SWEET PE', '', 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', '', 'ADD SPICY PEPPERS - DAWGS'),]
+
+drinks_order = [('SMAL', '', 'SMALL SODA'), ('LARG', '', 'LARGE SODA'),
+                ('PITCH', '', 'PITCHER SODA'),
                 ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
                 ('HOT TEA', '', 'HOT TEA'), ('ICE', '', 'ICED TEA'),
-                ('WATER', '', 'BOTTLED WATER'),]
+                ('WATER', '', 'BOTTLED WATER'), ('MONST', '', 'MONSTER'),]
 
 desserts_order = [('VANIL', '', 'VANILLA SHAKE'), ('CHOC', '', 'CHOCOLATE SHAKE'),
                   ('STRAW', '', 'STRAWBERRY SHAKE'), ('ROOT', '', 'ROOTBEER FLOAT SHAKE'),
+                  ('POLIT', '', 'NEAPOLITAN SHAKE'),
                   ('ADD NUT', '', 'ADD NUTELLA'), ('ADD BAN', '', 'ADD BANANA'),
                   ('ADD PEA', '', 'ADD PEANUT BUTTER'), ('CREAM', '', 'SCOOP OF ICE CREAM'),
                   ('ADD SCO', '', 'ADD SCOOP OF ICE CREAM'), ('FUDGE', '', 'HOT FUDGE SUNDAE'),
@@ -94,7 +127,14 @@ kids_menu_order = [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CH
 merchandise_order = [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),]
 
 # Items considered misplaced, with exclude term, chosen name and subcategory, large search term and chosen name, and 0 if small, 1 if small&large or 3 if an extra.
-out_of_order = [('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),]
+out_of_order = [('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),
+                ('ADD 1/2 CLASSIC', '', 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('ADD 1/2 TURKEY', '', 'ADD TURKEY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('COMBO REGULAR FRIES', '', 'REGULAR FRIES', 'COMBO', '', '', 0),
+                ('COMBO SWEET POTATO', '', 'SWEET POTATO FRIES', 'COMBO', '', '', 0),
+                ('COMBO ONION RINGS', '', 'ONION RINGS', 'COMBO', '', '', 0),
+                ('EXTRA CHICKEN', '', 'EXTRA CHICKEN', 'SANDWICHES', '', '', 0),
+                ('EXTRA FILET MIGNON', '', 'EXTRA FILET MIGNON', 'SANDWICHES', '', '', 0),]
 
 # PixelPOS "Profit by Summary Group" sales report columns.
 # Nothing is in Cost, % Cost or Profit columns so ignoring.
@@ -122,6 +162,8 @@ def parse_sales(sales_raw):
     chicken_wings = {}
     fries_rings = {}
     combo = {}
+    sides_salads = {}
+    modifiers = {}
     drinks = {}
     desserts = {}
     kids_menu = {}
@@ -138,6 +180,8 @@ def parse_sales(sales_raw):
         chicken_wings[c] = []
         fries_rings[c] = []
         combo[c] = []
+        sides_salads[c] = []
+        modifiers[c] = []
         drinks[c] = []
         desserts[c] = []
         kids_menu[c] = []
@@ -188,13 +232,13 @@ def parse_sales(sales_raw):
         # Catch end of subcategory and organize.
         if d['Subcategory'][r] and any(row[2:]):
             if subcategory == 'BEER':
-                beer2, misplaced = organize(sales_raw, subcategory, beer, beer_order, beer_extra, beer_large, misplaced)
+                beer2, misplaced = organize(sales_raw, subcategory, beer, beer_order, misplaced, beer_extra, beer_large)
                 [d2[c].append(beer2[c][r2]) for r2 in xrange(len(beer2[cols[0]])) for c in cols]
             elif subcategory == 'WINE':
-                wine2, misplaced = organize(sales_raw, subcategory, wine, wine_order, wine_extra, wine_large, misplaced)
+                wine2, misplaced = organize(sales_raw, subcategory, wine, wine_order, misplaced, wine_extra, wine_large)
                 [d2[c].append(wine2[c][r2]) for r2 in xrange(len(wine2[cols[0]])) for c in cols]
             elif subcategory == 'BURGERS':
-                burgers2, misplaced = organize(sales_raw, subcategory, burgers, burgers_order, burgers_extra, burgers_large, misplaced)
+                burgers2, misplaced = organize(sales_raw, subcategory, burgers, burgers_order, misplaced, burgers_extra, burgers_large)
                 [d2[c].append(burgers2[c][r2]) for r2 in xrange(len(burgers2[cols[0]])) for c in cols]
             elif subcategory == 'SANDWICHES':
                 sandwiches2, misplaced = organize(sales_raw, subcategory, sandwiches, sandwiches_order, misplaced)
@@ -211,6 +255,12 @@ def parse_sales(sales_raw):
             elif subcategory == 'COMBO':
                 combo2, misplaced = organize(sales_raw, subcategory, combo, combo_order, misplaced)
                 [d2[c].append(combo2[c][r2]) for r2 in xrange(len(combo2[cols[0]])) for c in cols]
+            elif subcategory == 'SIDES & SALADS':
+                sides_salads2, misplaced = organize(sales_raw, subcategory, sides_salads, sides_salads_order, misplaced)
+                [d2[c].append(sides_salads2[c][r2]) for r2 in xrange(len(sides_salads2[cols[0]])) for c in cols]
+            elif subcategory == 'MODIFIERS':
+                modifiers2, misplaced = organize(sales_raw, subcategory, modifiers, modifiers_order, misplaced)
+                [d2[c].append(modifiers2[c][r2]) for r2 in xrange(len(modifiers2[cols[0]])) for c in cols]
             elif subcategory == 'DRINKS':
                 drinks2, misplaced = organize(sales_raw, subcategory, drinks, drinks_order, misplaced)
                 [d2[c].append(drinks2[c][r2]) for r2 in xrange(len(drinks2[cols[0]])) for c in cols]
@@ -251,6 +301,12 @@ def parse_sales(sales_raw):
             elif subcategory == 'COMBO':
                 [combo[c].append(d[c][r]) for c in cols]
                 continue
+            elif subcategory == 'SIDES & SALADS':
+                [sides_salads[c].append(d[c][r]) for c in cols]
+                continue
+            elif subcategory == 'MODIFIERS':
+                [modifiers[c].append(d[c][r]) for c in cols]
+                continue
             elif subcategory == 'DRINKS':
                 [drinks[c].append(d[c][r]) for c in cols]
                 continue
@@ -275,7 +331,7 @@ def parse_sales(sales_raw):
     return d2, misplaced  # MAW
 
 
-def organize(sales_raw, subcategory, d, order, extra=[], large=(), misplaced=[]):
+def organize(sales_raw, subcategory, d, order, misplaced=[], extra=[], large=()):
     """Organize report subcategories into consistent items and order."""
     all = [[d[c][r].upper() for c in cols] for r in xrange(len(d[cols[0]]))]
     item = cols.index('Item')
@@ -314,23 +370,36 @@ def organize(sales_raw, subcategory, d, order, extra=[], large=(), misplaced=[])
                 if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
                     found = True
                     if out[i][k]:
-                        out[i][k][quantity] = str(int(out[i][k][quantity]) + int(serving[quantity]))
-                        out[i][k][value] = str(float(out[i][k][value]) + float(serving[value]))
+                        out[i][k][quantity] = str(float(out[i][k][quantity]) + float(fixnum(serving[quantity])))
+                        out[i][k][value] = str(float(out[i][k][value]) + float(fixnum(serving[value])))
                     else:
                         out[i][k] = serving[:]
                         out[i][k][item] = o[2] + ' ' + large[2] if large and i == 1 else o[2]
+                        out[i][k][quantity] = fixnum(serving[quantity])
+                        out[i][k][value] = fixnum(serving[value])
 
             # If item not found, check if it's a known misplaced item.
             if not found:
                 found_out = False
                 for k, o in enumerate(out_of_order):
-                    if o[0] in serving[item] and not (o[1] and o[1] in serving[item]) and (o[6] == 0 and i == 0 or o[6] == 1 and i <= 1 or o[6] == 2 and i == 2):
-                        found_out = True
-                        placed = serving[:]
-                        placed[item] = o[2] + ' ' + o[5] if o[5] and (i == 1 or o[4] and o[4] in serving[item]) else o[2]
-                        misplaced.append((o[3], k, i, placed))
-                        print ('File "%s": Moving Subcategory "%s" item "%s" to Subcategory "%s" as item "%s".' %
-                               (sales_raw.split('/')[-1], subcategory, serving[item], o[3], placed[item]))
+                    if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                        if o[6] == 0 and i == 0 or o[6] == 1 or o[6] == 2 and i == 2:
+                            found_out = True
+                            placed = serving[:]
+                            placed[item] = o[2]
+                            placed[quantity] = fixnum(serving[quantity])
+                            placed[value] = fixnum(serving[value])
+                            if o[6] == 1:
+                                if o[4] in serving[item]:
+                                    placed[item] += ' ' + o[5]
+                                    mistype = 1
+                                else:
+                                    mistype = 0
+                            else:
+                                mistype = i
+                            misplaced.append((o[3], k, mistype, placed))
+                            print ('File "%s": Moving Subcategory "%s" item "%s" to Subcategory "%s" as item "%s".' %
+                                   (sales_raw.split('/')[-1], subcategory, serving[item], o[3], placed[item]))
 
                 # Notify if item not known.
                 if not found_out:
@@ -377,6 +446,18 @@ def organize(sales_raw, subcategory, d, order, extra=[], large=(), misplaced=[])
     return d2, misplaced2
 
 
+def fixnum(num):
+    """Fix LibreOffice conversion glitch which sometimes puts '.' instead of
+       ',' in numbers."""
+    bits = str(num).split('.')
+    if len(bits[-1]) > 2:
+        fixed = ','.join(bits)
+    else:
+        fixed = ','.join(bits[:-1]) + '.' + bits[-1]
+
+    return fixed
+
+
 def output_new(d, sales_clean):
     """Write output csv file."""
     try:
@@ -411,7 +492,9 @@ def main():
             print 'Conversion of xls file to csv failed.'
             return
         sales_file_raw = ''.join(sales_file_in.split('.')[:-1]) + '.csv'
-    elif extension !='csv':
+    elif extension == 'csv':
+        sales_file_raw = sales_file_in
+    else:
         print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
         return
 

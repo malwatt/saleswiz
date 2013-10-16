@@ -4,8 +4,9 @@
 # To do:
 # 1. Loop to read, convert and process all reports in folder.
 # 2. Place misplaced items in correct subcategories.
-# 3. Make sure all historical items are getting caught properly.
+# 3. Recalculate subcategory and category tallies after removing misplaced items.
 # 4. Order categories and subcategories.
+# 5. Put extraneous items like KITCHEN MEMO into OTHER.
 
 import os
 import glob
@@ -21,146 +22,147 @@ from collections import OrderedDict
 # Same for tuples for finding and naming large size.
 subcategories = {
     'BEER': {
-        'order': [('BOCK', '', 'DADDY BOCK'), ('LIGHT', 'BUD', 'DADDY LIGHT'),
-                  ('STELLA', '', 'STELLA'), ('BLUE', '', 'BLUE MOON'),
-                  ('STONE IPA', '', 'STONE IPA'), ('SMITH X', '', 'ALESMITH X'),
-                  ('ROCKET', '', 'RED ROCKET'), ('ROTAT', '', 'ROTATOR'),
-                  ('CASTLE', '', 'NEWCASTLE'), ('XX', '', 'DOS XX'),
-                  ('HEIN', '', 'HEINEKEN'), ('TOP BELG', '', 'SHOCK TOP BELGIAN'),
-                  ('NEGR', '', 'NEGRA MODELO'), ('BUD', '', 'BUD LIGHT'),
-                  ('ARDEN', '', 'HOEGAARDEN'), ('TOP IPA', '', 'SHOCK TOP IPA'),],
-        'extra': [('SAMPLE', '', 'BEER SAMPLER'),],
+        'order': [('BOCK', [], 'DADDY BOCK'), ('LIGHT', ['BUD',], 'DADDY LIGHT'),
+                  ('STELLA', [], 'STELLA'), ('BLUE', [], 'BLUE MOON'),
+                  ('STONE IPA', [], 'STONE IPA'), ('SMITH X', [], 'ALESMITH X'),
+                  ('ROCKET', [], 'RED ROCKET'), ('ROTAT', [], 'ROTATOR'),
+                  ('CASTLE', [], 'NEWCASTLE'), ('XX', [], 'DOS XX'),
+                  ('HEIN', [], 'HEINEKEN'), ('TOP BELG', [], 'SHOCK TOP BELGIAN'),
+                  ('NEGR', [], 'NEGRA MODELO'), ('BUD', [], 'BUD LIGHT'),
+                  ('ARDEN', [], 'HOEGAARDEN'), ('TOP IPA', [], 'SHOCK TOP IPA'),],
+        'extra': [('SAMPLE', [], 'BEER SAMPLER'),],
         'large': ('CHER', '', 'PITCHER'),},
 
     'WINE': {
-        'order': [('CHAR', '', 'PENFOLDS CHARDONNAY'), ('LING', '', 'COLUMBIA RIESLING'),
-                  ('POLA', '', 'COPPOLA PINOT GRIGIO'), ('MOSC', '', 'MOSCATO'),
-                  ('CABER', 'STRONG', 'PENFOLDS CABERNET'), ('MERL', '', 'WOODBRIDGE MERLOT'),
-                  ('BERIN', '', 'BERINGER PINOT NOIR'), ('STRONG', '', 'RODNEY STRONG CABERNET'),
-                  ('MALB', '', 'TAMARI MALBEC'),],
-        'extra': [('SPARK', '', 'MIONETTO SPARKING SPLIT'), ('CORKA', '', 'CORKAGE FEE'),],
+        'order': [('CHAR', [], 'PENFOLDS CHARDONNAY'), ('LING', [], 'COLUMBIA RIESLING'),
+                  ('POLA', [], 'COPPOLA PINOT GRIGIO'), ('MOSC', [], 'MOSCATO'),
+                  ('CABER', ['STRONG',], 'PENFOLDS CABERNET'), ('MERL', [], 'WOODBRIDGE MERLOT'),
+                  ('BERIN', [], 'BERINGER PINOT NOIR'), ('STRONG', [], 'RODNEY STRONG CABERNET'),
+                  ('MALB', [], 'TAMARI MALBEC'),],
+        'extra': [('SPARK', [], 'MIONETTO SPARKING SPLIT'), ('CORKA', [], 'CORKAGE FEE'),],
         'large': ('BOTT', '', 'BOTTLE'),},
 
     'BURGERS': {
-        'order': [('CLASSIC', '', 'CLASSIC'), ('DADDY', '', 'DADDY'),
-                  ('TURK', '', 'TURKEY'), ('CHICK', '', 'CHICKEN'),
-                  ('HAWAII', '', 'HAWAII FIVE-O'), ('MUSH', '', 'MUSHROOM MADNESS'),
-                  ('LAMB', '', 'LAMB'),
-                  ('ADD CLA', '', 'ADD CLASSIC PATTY'), ('ADD DAD', '', 'ADD DADDY PATTY'),
-                  ('ADD TUR', '', 'ADD TURKEY'), ('ADD CHI', '', 'ADD CHICKEN PATTY'),
-                  ('ADD HAW', '', 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', '', 'ADD MUSHROOM MADNESS PATTY'),
-                  ('ADD LAM', '', 'ADD LAMB PATTY'),],
-        'extra': [('VEG', '', 'VEGGIE'), ('BELLO', '', 'PORTABELLO'),],
+        'order': [('CLASSIC', [], 'CLASSIC'), ('DADDY', [], 'DADDY'),
+                  ('TURK', [], 'TURKEY'), ('CHICK', [], 'CHICKEN'),
+                  ('HAWAII', [], 'HAWAII FIVE-O'), ('MUSH', [], 'MUSHROOM MADNESS'),
+                  ('LAMB', [], 'LAMB'),
+                  ('ADD CLA', [], 'ADD CLASSIC PATTY'), ('ADD DAD', [], 'ADD DADDY PATTY'),
+                  ('ADD TUR', [], 'ADD TURKEY'), ('ADD CHI', [], 'ADD CHICKEN PATTY'),
+                  ('ADD HAW', [], 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', [], 'ADD MUSHROOM MADNESS PATTY'),
+                  ('ADD LAM', [], 'ADD LAMB PATTY'),],
+        'extra': [('VEG', [], 'VEGGIE'), ('BELLO', [], 'PORTABELLO'),],
         'large': ('1/2', '', '1/2 LB'),},
 
     'SANDWICHES': {
-        'order': [('CHICK', 'EXTRA', 'CHICKEN'), ('SALM', 'EXTRA', 'SALMON'),
-                  ('MIGNON', 'EXTRA', 'FILET MIGNON'),  ('PORK', 'EXTRA', 'PORK TENDERLOIN'),
-                  ('CHEE', '', 'GRILLED CHEESE'), ('BLT', '', 'BLT'),
-                  ('EXTRA CHICK', '', 'EXTRA CHICKEN'), ('EXTRA SALM', '', 'EXTRA SALMON'),
-                  ('EXTRA FILET M', '', 'EXTRA FILET MIGNON'),  ('EXTRA PORK', '', 'EXTRA PORK TENDERLOIN'),],
+        'order': [('CHICK', ['EXTRA',], 'CHICKEN'), ('SALM', ['EXTRA',], 'SALMON'),
+                  ('MIGNON', ['EXTRA',], 'FILET MIGNON'),  ('PORK', ['EXTRA',], 'PORK TENDERLOIN'),
+                  ('CHEE', [], 'GRILLED CHEESE'), ('BLT', [], 'BLT'),
+                  ('EXTRA CHICK', [], 'EXTRA CHICKEN'), ('EXTRA SALM', [], 'EXTRA SALMON'),
+                  ('EXTRA FILET M', [], 'EXTRA FILET MIGNON'),  ('EXTRA PORK', [], 'EXTRA PORK TENDERLOIN'),],
         'extra': [],
         'large': (),},
 
     'DAWGS & SAUSAGES': {
-        'order': [('BIG', '', 'BIG DAWG'), ('BACON', '', 'SMOKED BACON DAWG'),
-                  ('ANTON', '', 'SAN ANTONIO CHILI DAWG'), ('CHEE', '', 'NACHO CHEESE DAWG'),
-                  ('BRAT', '', 'BRATWURST SAUSAGE'), ('ITAL', '', 'SWEET ITALIAN SAUSAGE'),
-                  ('ANDO', '', 'ANDOUILLE SAUSAGE'), ('CHICK', '', 'CHICKEN SOUTHWEST CALIENTE SAUSAGE'),],
+        'order': [('BIG', [], 'BIG DAWG'), ('BACON', [], 'SMOKED BACON DAWG'),
+                  ('ANTON', [], 'SAN ANTONIO CHILI DAWG'), ('CHEE', [], 'NACHO CHEESE DAWG'),
+                  ('BRAT', [], 'BRATWURST SAUSAGE'), ('ITAL', [], 'SWEET ITALIAN SAUSAGE'),
+                  ('ANDO', [], 'ANDOUILLE SAUSAGE'), ('CHICK', [], 'CHICKEN SOUTHWEST CALIENTE SAUSAGE'),],
         'extra': [],
         'large': (),},
 
     'CHICKEN WINGS': {
-        'order': [('6 PIEC', '', '6 PIECES'), ('12 PIEC', '', '12 PIECES'),
-                  ('18 PIEC', '', '18 PIECES'), ('50 PIE', '', '50 PIECES'),],
+        'order': [('6 PIEC', [], '6 PIECES'), ('12 PIEC', [], '12 PIECES'),
+                  ('18 PIEC', [], '18 PIECES'), ('50 PIE', [], '50 PIECES'),],
         'extra': [],
         'large': (),},
 
     'FRIES & RINGS': {
-        'order': [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
-                  ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
-                  ('TRIO', 'GARL', 'DADDY TRIO'), ('TRIO GA', '', 'DADDY TRIO GARLIC'),
-                  ('LI CHEESE FR', '', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
-                  ('HO CHEESE FR', '', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),],
+        'order': [('REGULAR FR', [], 'REGULAR FRIES'), ('GARLIC FR', ['CH', 'COMBO',], 'GARLIC FRIES'),
+                  ('SWEET', [], 'SWEET POTATO FRIES'), ('ONION', [], 'ONION RINGS'),
+                  ('TRIO', ['GARL',], 'DADDY TRIO'), ('TRIO GA', [], 'DADDY TRIO GARLIC'),
+                  ('LI CHEESE FR', ['COMBO',], 'CHILI CHEESE FRIES'), ('LI CHEESE GA', ['COMBO',], 'CHILI CHEESE GARLIC FRIES'),
+                  ('HO CHEESE FR', ['COMBO',], 'NACHO CHEESE FRIES'), ('HO CHEESE GA', ['COMBO',], 'NACHO CHEESE GARLIC FRIES'),],
         'extra': [],
         'large': (),},
 
     'COMBO': {
-        'order': [('REGULAR FR', '', 'REGULAR FRIES'), ('GARLIC FR', 'CH', 'GARLIC FRIES'),
-                  ('SWEET', '', 'SWEET POTATO FRIES'), ('ONION', '', 'ONION RINGS'),
-                  ('LI CHEESE', 'GA', 'CHILI CHEESE FRIES'), ('LI CHEESE GA', '', 'CHILI CHEESE GARLIC FRIES'),
-                  ('HO CHEESE', 'GA', 'NACHO CHEESE FRIES'), ('HO CHEESE GA', '', 'NACHO CHEESE GARLIC FRIES'),],
+        'order': [('REGULAR FR', [], 'REGULAR FRIES'), ('GARLIC FR', ['CH',], 'GARLIC FRIES'),
+                  ('SWEET', [], 'SWEET POTATO FRIES'), ('ONION', [], 'ONION RINGS'),
+                  ('LI CHEESE', ['GA',], 'CHILI CHEESE FRIES'), ('LI CHEESE GA', [], 'CHILI CHEESE GARLIC FRIES'),
+                  ('HO CHEESE', ['GA',], 'NACHO CHEESE FRIES'), ('HO CHEESE GA', [], 'NACHO CHEESE GARLIC FRIES'),],
         'extra': [],
         'large': (),},
 
     'SIDES & SALADS': {
-        'order': [('BIG', '', 'BIG 50'),
-                  ('SALAD', 'SIDE', 'SALAD'), ('SIDE SALAD', '', 'SIDE SALAD'),
-                  ('CHICK', '', 'ADD CHICKEN'), ('SALM', '', 'ADD SALMON'),
-                  ('MIGNON', '', 'ADD FILET MIGNON'), ('AVOC', '', 'ADD AVOCADO'),
-                  ('SLAW', 'LARGE', 'SMALL COLE SLAW'), ('SLAW', 'SMALL', 'LARGE COLE SLAW'),
-                  ('CHILI', 'LARGE', 'SMALL CHILI'), ('CHILI', 'SMALL', 'LARGE CHILI'),
-                  ('CRISP', 'LARGE', 'SMALL CHICKEN CRISPERS'), ('CRISP', 'SMALL', 'LARGE CHICKEN CRISPERS'),
-                  ('ZUC', '', 'ZUCCHINI DIPPERS'), ('POPP', '', 'MUSHROOM POPPERS'),
-                  ('CHIP', '', 'CHIPS'), ('BROWN', '', 'HASH BROWNS'),],
+        'order': [('BIG', [], 'BIG 50'),
+                  ('SALAD', ['SIDE',], 'SALAD'), ('SIDE SALAD', [], 'SIDE SALAD'),
+                  ('CHICK', [], 'ADD CHICKEN'), ('SALM', [], 'ADD SALMON'),
+                  ('MIGNON', [], 'ADD FILET MIGNON'), ('AVOC', [], 'ADD AVOCADO'),
+                  ('SLAW', ['LARGE',], 'SMALL COLE SLAW'), ('SLAW', ['SMALL',], 'LARGE COLE SLAW'),
+                  ('CHILI', ['LARGE',], 'SMALL CHILI'), ('CHILI', ['SMALL',], 'LARGE CHILI'),
+                  ('CRISP', ['LARGE',], 'SMALL CHICKEN CRISPERS'), ('CRISP', ['SMALL',], 'LARGE CHICKEN CRISPERS'),
+                  ('ZUC', [], 'ZUCCHINI DIPPERS'), ('POPP', [], 'MUSHROOM POPPERS'),
+                  ('CHIP', [], 'CHIPS'), ('BROWN', [], 'HASH BROWNS'),],
         'extra': [],
         'large': (),},
 
     'MODIFIERS': {
-        'order': [('CHEDD', 'EXTRA', 'ADD CHEDDAR CHEESE'), ('AMER', 'EXTRA', 'ADD AMERICAN CHEESE'),
-                  ('SWISS', 'EXTRA', 'ADD SWISS CHEESE'), ('PEPPERJ', 'EXTRA', 'ADD PEPPERJACK CHEESE'),
-                  ('GORG', 'EXTRA', 'ADD GORGONZOLA CHEESE'), ('NACHO', 'EXTRA', 'ADD NACHO CHEESE'),
-                  ('BACON', 'EXTRA', 'ADD BACON'), ('AVOC', 'EXTRA', 'ADD AVOCADO'),
-                  ('MUSH', 'EXTRA', 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', '', 'ADD GRILLED PINEAPPLE'),
-                  ('EGG', '', 'ADD FRIED EGG'),  ('CHILI', '', 'ADD CHILI'),
-                  ('RING', 'SUB', 'ADD ONION RINGS'), ('BELL', '', 'ADD GRILLED BELL PEPPER'),
-                  ('EXTRA CHEDD', '', 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', '', 'EXTRA AMERICAN CHEESE'),
-                  ('EXTRA SWISS', '', 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', '', 'EXTRA PEPPERJACK CHEESE'),
-                  ('EXTRA GORG', '', 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', '', 'EXTRA NACHO CHEESE'),
-                  ('EXTRA BACON', '', 'EXTRA BACON'), ('EXTRA AVOC', '', 'EXTRA AVOCADO'),
-                  ('EXTRA SAUT', '', 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
-                  ('SUB GAR', '', 'SUB GARLIC FRIES'), ('SWEET PO', '', 'SUB SWEET POTATO FRIES'),
-                  ('RING', 'TOP', 'SUB ONION RINGS'),
-                  ('SAUCE', 'BBQ', 'ADD SAUCE'), ('BBQ', '', 'ADD BBQ SAUCE'),
-                  ('RANCH', '', 'ADD RANCH'), ('PESTO', '', 'ADD PESTO AIOLI'),
-                  ('DIJON', '', 'ADD DIJON-MAYO AIOLI'), ('MAYO', 'DIJ', 'ADD MAYO AIOLI'),
-                  ('KETCH', '', 'ADD SMOKED KETCHEP'),
-                  ('ONIONS-D', '', 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', '', 'ADD SAUERKRAUT - DAWGS'),
-                  ('SWEET PE', '', 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', '', 'ADD SPICY PEPPERS - DAWGS'),],
+        'order': [('CHEDD', ['EXTRA',], 'ADD CHEDDAR CHEESE'), ('AMER', ['EXTRA',], 'ADD AMERICAN CHEESE'),
+                  ('SWISS', ['EXTRA',], 'ADD SWISS CHEESE'), ('PEPPERJ', ['EXTRA',], 'ADD PEPPERJACK CHEESE'),
+                  ('GORG', ['EXTRA',], 'ADD GORGONZOLA CHEESE'), ('NACHO', ['EXTRA',], 'ADD NACHO CHEESE'),
+                  ('BACON', ['EXTRA',], 'ADD BACON'), ('AVOC', ['EXTRA',], 'ADD AVOCADO'),
+                  ('MUSH', ['EXTRA',], 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', [], 'ADD GRILLED PINEAPPLE'),
+                  ('EGG', [], 'ADD FRIED EGG'),  ('CHILI', [], 'ADD CHILI'),
+                  ('RING', ['SUB',], 'ADD ONION RINGS'), ('BELL', [], 'ADD GRILLED BELL PEPPER'),
+                  ('EXTRA CHEDD', [], 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', [], 'EXTRA AMERICAN CHEESE'),
+                  ('EXTRA SWISS', [], 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', [], 'EXTRA PEPPERJACK CHEESE'),
+                  ('EXTRA GORG', [], 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', [], 'EXTRA NACHO CHEESE'),
+                  ('EXTRA BACON', [], 'EXTRA BACON'), ('EXTRA AVOC', [], 'EXTRA AVOCADO'),
+                  ('EXTRA SAUT', [], 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
+                  ('SUB GAR', [], 'SUB GARLIC FRIES'), ('SWEET PO', [], 'SUB SWEET POTATO FRIES'),
+                  ('RING', ['TOP',], 'SUB ONION RINGS'),
+                  ('SAUCE', ['BBQ',], 'ADD SAUCE'), ('BBQ', [], 'ADD BBQ SAUCE'),
+                  ('RANCH', [], 'ADD RANCH'), ('PESTO', [], 'ADD PESTO AIOLI'),
+                  ('DIJON', [], 'ADD DIJON-MAYO AIOLI'), ('MAYO', ['DIJ',], 'ADD MAYO AIOLI'),
+                  ('KETCH', [], 'ADD SMOKED KETCHEP'),
+                  ('ONIONS-D', [], 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', [], 'ADD SAUERKRAUT - DAWGS'),
+                  ('SWEET PE', [], 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', [], 'ADD SPICY PEPPERS - DAWGS'),],
         'extra': [],
         'large': (),},
 
     'DRINKS': {
-        'order': [('SMAL', '', 'SMALL SODA'), ('LARG', '', 'LARGE SODA'),
-                  ('PITCH', '', 'PITCHER SODA'),
-                  ('COFF', 'DECA', 'COFFEE'), ('DECAF', '', 'DECAF COFFEE'),
-                  ('HOT TEA', '', 'HOT TEA'), ('ICE', '', 'ICED TEA'),
-                  ('WATER', '', 'BOTTLED WATER'), ('MONST', '', 'MONSTER'),],
+        'order': [('SMAL', [], 'SMALL SODA'), ('LARG', [], 'LARGE SODA'),
+                  ('PITCH', [], 'PITCHER SODA'),
+                  ('COFF', ['DECA',], 'COFFEE'), ('DECAF', [], 'DECAF COFFEE'),
+                  ('HOT TEA', [], 'HOT TEA'), ('ICE', [], 'ICED TEA'),
+                  ('WATER', [], 'BOTTLED WATER'), ('MONST', [], 'MONSTER'),],
         'extra': [],
         'large': (),},
 
     'DESSERTS': {
-        'order': [('VANIL', '', 'VANILLA SHAKE'), ('CHOC', '', 'CHOCOLATE SHAKE'),
-                  ('STRAW', '', 'STRAWBERRY SHAKE'), ('ROOT', '', 'ROOTBEER FLOAT SHAKE'),
-                  ('POLIT', '', 'NEAPOLITAN SHAKE'),
-                  ('ADD NUT', '', 'ADD NUTELLA'), ('ADD BAN', '', 'ADD BANANA'),
-                  ('ADD PEA', '', 'ADD PEANUT BUTTER'), ('CREAM', '', 'SCOOP OF ICE CREAM'),
-                  ('ADD SCO', '', 'ADD SCOOP OF ICE CREAM'), ('FUDGE', '', 'HOT FUDGE SUNDAE'),
-                  ('SPLIT', '', 'BANANA SPLIT'), ('CAKE', '', 'CAKE POP'),],
+        'order': [('VANIL', [], 'VANILLA SHAKE'), ('CHOC', [], 'CHOCOLATE SHAKE'),
+                  ('STRAW', [], 'STRAWBERRY SHAKE'), ('ROOT', [], 'ROOTBEER FLOAT SHAKE'),
+                  ('POLIT', [], 'NEAPOLITAN SHAKE'),
+                  ('ADD NUT', [], 'ADD NUTELLA'), ('ADD BAN', [], 'ADD BANANA'),
+                  ('ADD PEA', [], 'ADD PEANUT BUTTER'), ('CREAM', [], 'SCOOP OF ICE CREAM'),
+                  ('ADD SCO', [], 'ADD SCOOP OF ICE CREAM'), ('FUDGE', [], 'HOT FUDGE SUNDAE'),
+                  ('SPLIT', [], 'BANANA SPLIT'), ('CAKE', [], 'CAKE POP'),],
         'extra': [],
         'large': (),},
 
     'KIDS MENU': {
-        'order': [('BURG', 'CHEE', 'KIDS BURGER'), ('CHEESE BURG', '', 'KIDS CHEESE BURGER'),
-                  ('DAWG', '', 'KIDS DAWG'), ('LED CHEE', '', 'KIDS GRILLED CHEESE'),
-                  ('CRISP', '', 'KIDS CHICKEN CRISPERS'), ('MILK', '', 'KIDS MILK'),],
+        'order': [('BURG', ['CHEE', 'TUR',], 'KIDS BURGER'), ('CHEESE BURG', [], 'KIDS CHEESE BURGER'),
+                  ('KEY BURG', [], 'KIDS TURKEY BURGER'), ('DAWG', [], 'KIDS DAWG'),
+                  ('LED CHEE', [], 'KIDS GRILLED CHEESE'), ('CRISP', [], 'KIDS CHICKEN CRISPERS'),
+                  ('MILK', [], 'KIDS MILK'),],
         'extra': [],
         'large': (),},
 
     'BREAKFAST SANDWICHES': {
-        'order': [('PLAIN', '', 'PLAIN OMELET'), ('WHITE', '', 'EGG WHITE OMELET'),
-                  ('CHOR', '', 'CHORIZO OMELET'), ('THREE', '', '3 CHEESE OMELET'),
-                  ('BAC', '', 'BACON ONION 3 CHEESE OMELET'),],
+        'order': [('PLAIN', [], 'PLAIN OMELET'), ('WHITE', [], 'EGG WHITE OMELET'),
+                  ('CHOR', [], 'CHORIZO OMELET'), ('THREE', [], '3 CHEESE OMELET'),
+                  ('BAC', [], 'BACON ONION 3 CHEESE OMELET'),],
         'extra': [],
         'large': (),},
 
@@ -170,24 +172,31 @@ subcategories = {
         'large': (),},
 
     'MERCHANDISE': {
-        'order': [('HAT', '', 'HAT'), ('SHIRT', '', 'T-SHIRT'),],
+        'order': [('HAT', [], 'HAT'), ('SHIRT', [], 'T-SHIRT'),],
+        'extra': [],
+        'large': (),},
+
+    'GIFT CARD': {
+        'order': [('OPEN', [], 'OPEN ITEM'),],
         'extra': [],
         'large': (),},
 }
 
 # Items considered misplaced, with exclude term, chosen name and subcategory, large search term and chosen name,
 # and 0 if small, 1 if small&large or 3 if an extra.
-out_of_order = [('ADD 1/2 CLASSIC', '', 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
-                ('ADD 1/2 TURKEY', '', 'ADD TURKEY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
-                ('SUB DADDY PATTY', '', 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
-                ('SUB 1/2LB DADDY PATTY', '', 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
-                ('EXTRA CHICKEN', '', 'EXTRA CHICKEN', 'SANDWICHES', '', '', 0),
-                ('EXTRA FILET MIGNON', '', 'EXTRA FILET MIGNON', 'SANDWICHES', '', '', 0),
-                ('SUPERBOWL SPECIAL', '', '50 PIECES', 'CHICKEN WINGS', '', '', 0),
-                ('COMBO REGULAR FRIES', '', 'REGULAR FRIES', 'COMBO', '', '', 0),
-                ('COMBO SWEET POTATO', '', 'SWEET POTATO FRIES', 'COMBO', '', '', 0),
-                ('COMBO ONION RINGS', '', 'ONION RINGS', 'COMBO', '', '', 0),
-                ('JR. CHICKEN CRISPERS', '', 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),]
+out_of_order = [('ADD 1/2 CLASSIC', [], 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('ADD 1/2 TURKEY', [], 'ADD TURKEY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('SUB DADDY PATTY', [], 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('SUB 1/2LB DADDY PATTY', [], 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('EXTRA CHICKEN', [], 'EXTRA CHICKEN', 'SANDWICHES', '', '', 0),
+                ('EXTRA FILET MIGNON', [], 'EXTRA FILET MIGNON', 'SANDWICHES', '', '', 0),
+                ('SUPERBOWL SPECIAL', [], '50 PIECES', 'CHICKEN WINGS', '', '', 0),
+                ('COMBO REGULAR FRIES', [], 'REGULAR FRIES', 'COMBO', '', '', 0),
+                ('COMBO GARLIC FRIES', [], 'GARLIC FRIES', 'COMBO', '', '', 0),
+                ('COMBO SWEET POTATO', [], 'SWEET POTATO FRIES', 'COMBO', '', '', 0),
+                ('COMBO ONION RINGS', [], 'ONION RINGS', 'COMBO', '', '', 0),
+                ('COMBO NACHO CHEESE FRIES', [], 'NACHO CHEESE FRIES', 'COMBO', '', '', 0),
+                ('JR. CHICKEN CRISPERS', [], 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),]
 
 # PixelPOS "Profit by Summary Group" sales report columns.
 # Nothing is in Cost, % Cost or Profit columns so ignoring.
@@ -278,6 +287,8 @@ def parse_sales(sales_raw):
     #for mis in misplaced:
     #    Insert or consolidate in correct d[c][r] at position determined by mis[2] (0=small, 1=small&large, 2=extra).
     #    Delete item from misplaced.
+    #for m, mis in misplaced:
+    #    serving =
 
     return d2, misplaced  # MAW
 
@@ -287,7 +298,7 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
     all = [[d[c][r].upper() for c in cols] for r in xrange(len(d[cols[0]]))]
     order = subcategories[subcategory]['order']
     extra = subcategories[subcategory]['extra']
-    large = subcategories[subcategory]['large']
+    large = subcategories[subcategory]['large'][:]
     item = cols.index('Item')
     quantity = cols.index('Quantity')
     value = cols.index('Value')
@@ -321,7 +332,8 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
             # Find items and include in out list, consolidating if necessary.
             found = False
             for k, o in enumerate(ordr):
-                if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                if o[0] in serving[item] and not any(o[1] and o[1][j] in serving[item] for j in xrange(len(o[1]))):
+                    # and not any(ooo[0] in serving[item] and not (ooo[1] and ooo[1] in serving[item]) and ooo[3] not in subcategory for ooo in out_of_order):
                     found = True
                     if out[i][k]:
                         out[i][k][quantity] = str(float(out[i][k][quantity]) + float(fixnum(serving[quantity])))
@@ -336,7 +348,7 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
             if not found:
                 found_out = False
                 for k, o in enumerate(out_of_order):
-                    if o[0] in serving[item] and not (o[1] and o[1] in serving[item]):
+                    if o[0] in serving[item] and not any(o[1] and o[1][j] in serving[item] for j in xrange(len(o[1]))):
                         if o[6] == 0 and i == 0 or o[6] == 1 or o[6] == 2 and i == 2:
                             found_out = True
                             placed = serving[:]

@@ -1,15 +1,12 @@
 # Python script to organize PixelPOS "Profit by Summary Group" sales reports
 # into a useful and consistent format.
 
-# To do:
-# 1. Loop to read, convert and process all reports in folder.
-
 import os
-import glob
 import csv
 import sys
 import subprocess
 
+from glob import glob
 from collections import OrderedDict
 
 
@@ -551,8 +548,8 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
                             else:
                                 mistype = i
                             misplaced.append((o[3], k, mistype, placed))
-                            print ('File "%s": Moving Subcategory "%s" item "%s" to Subcategory "%s" as item "%s".' %
-                                   (sales_raw.split('/')[-1], subcategory, serving[item], o[3], placed[item]))
+                            #print ('File "%s": Moving Subcategory "%s" item "%s" to Subcategory "%s" as item "%s".' %
+                            #       (sales_raw.split('/')[-1], subcategory, serving[item], o[3], placed[item]))
 
                 # Notify if item not known.
                 if not found_out:
@@ -640,41 +637,61 @@ def main():
     try:
         sales_file_in = sys.argv[1]
     except:
-        print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
-        return
+        sales_file_in = ''
 
-    reports_dir = 'C:\\Users\\Malky\\Documents\\BD\\Reports'
+    reports_dir_win = 'C:\\Users\\Malky\\Documents\\BD\\Reports'
+    reports_dir_py = reports_dir_win.decode('utf-8').replace('\\','/')
 
-    extension = sales_file_in.split('.')[-1]
-    if extension == 'xls':
-        convert = subprocess.Popen(
-            ['soffice.exe', '--headless', '--invisible', '--convert-to', 'csv', '--outdir', reports_dir, reports_dir + '\\' + sales_file_in],
-             executable='C:\Program Files (x86)\LibreOffice 4\program\soffice.exe')
-        convert.wait()
-        if convert.returncode != 0:
-            print 'Conversion of xls file to csv failed.'
+    csv_files = glob(reports_dir_py + '/' + '*sales.csv')
+    xls_files = glob(reports_dir_py + '/' + '*sales.xls')
+    csv_files = [f.decode('utf-8').replace('\\','/') for f in csv_files]
+    xls_files = [f.decode('utf-8').replace('\\','/') for f in xls_files]
+
+    sales_files = [reports_dir_py + '/' + sales_file_in,] if sales_file_in else xls_files[:]
+
+    count_tried = 0
+    count_clean = 0
+    for f in sales_files:
+        count_tried += 1
+        extension = f.split('.')[-1]
+        if extension == 'xls':
+            f_short = f.split('/')[-1]
+            f_csv = ''.join(f.split('.')[:-1]) + '.csv'
+            if f_csv not in csv_files:
+                convert = subprocess.Popen(
+                    ['soffice.exe', '--headless', '--invisible', '--convert-to', 'csv', '--outdir', reports_dir_win, reports_dir_win + '\\' + f_short],
+                     executable='C:\Program Files (x86)\LibreOffice 4\program\soffice.exe')
+                convert.wait()
+                if convert.returncode != 0:
+                    print 'Conversion of file "%s" to csv failed.' % f_short
+                    return
+            sales_raw = f_csv
+        elif extension == 'csv':
+            sales_raw = f
+        else:
+            print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
+            print 'Or to process all sales files, do not specify an input file.'
             return
-        sales_file_raw = ''.join(sales_file_in.split('.')[:-1]) + '.csv'
-    elif extension == 'csv':
-        sales_file_raw = sales_file_in
-    else:
-        print 'Input file [we]YYYYMM[DD]sales.csv or .xls required.'
-        return
 
-    reports_dir = reports_dir.decode('utf-8').replace('\\','/')
-    sales_file_clean = sales_file_raw.split('.')[0] + '_clean.csv'
-    sales_clean = reports_dir + '/' + sales_file_clean
+        if sales_file_in:
+            try:
+                sales_raw = glob(sales_raw)[0]
+            except:
+                print 'Input file "%s" not found.' % sales_file_in
+                return
 
-    try:
-        sales_raw = glob.glob(reports_dir + '/' + sales_file_raw)[0]
-    except:
-        print 'File "%s" not found.' % sales_file_raw
-        return
+        sales_clean = ''.join(sales_raw.split('.')[:-1]) + '_clean.csv'
 
-    d, ok1 = parse_sales(sales_raw)
-    ok2 = output_new(d, sales_clean) if d else False
+        d, ok1 = parse_sales(sales_raw)
+        ok2 = output_new(d, sales_clean) if d else False
 
-    print 'OK' if ok1 and ok2 else 'No Bueno'
+        if ok1 and ok2:
+            count_clean += 1
+            print 'File "%s" OK.' % sales_clean.split('/')[-1]
+        else:
+            print 'File "%s" No Bueno.' % sales_clean.split('/')[-1]
+
+    print '%d files clean out of %d tried.' % (count_clean, count_tried)
 
 
 if __name__ == '__main__':

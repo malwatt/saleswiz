@@ -4,7 +4,6 @@
 # To do:
 # 1. Loop to read, convert and process all reports in folder.
 # 2. Order categories and subcategories.
-# 3. Put extraneous items like KITCHEN MEMO into OTHER.
 
 import os
 import glob
@@ -20,6 +19,7 @@ from collections import OrderedDict
 # Same for tuples for finding and naming large size.
 subcategories = {
     'BEER': {
+        'category': 'BEER',
         'order': [('BOCK', [], 'DADDY BOCK'), ('LIGHT', ['BUD',], 'DADDY LIGHT'),
                   ('STELLA', [], 'STELLA'), ('BLUE', [], 'BLUE MOON'),
                   ('STONE IPA', [], 'STONE IPA'), ('SMITH X', [], 'ALESMITH X'),
@@ -32,6 +32,7 @@ subcategories = {
         'large': ('CHER', '', 'PITCHER'),},
 
     'WINE': {
+        'category': 'WINE',
         'order': [('CHAR', [], 'PENFOLDS CHARDONNAY'), ('LING', [], 'COLUMBIA RIESLING'),
                   ('POLA', [], 'COPPOLA PINOT GRIGIO'), ('MOSC', [], 'MOSCATO'),
                   ('CABER', ['STRONG',], 'PENFOLDS CABERNET'), ('MERL', [], 'WOODBRIDGE MERLOT'),
@@ -40,19 +41,32 @@ subcategories = {
         'extra': [('SPARK', [], 'MIONETTO SPARKING SPLIT'), ('CORKA', [], 'CORKAGE FEE'),],
         'large': ('BOTT', '', 'BOTTLE'),},
 
+    'DRINKS': {
+        'category': 'BEVERAGES',
+        'order': [('SMAL', [], 'SMALL SODA'), ('LARG', [], 'LARGE SODA'),
+                  ('PITCH', [], 'PITCHER SODA'),
+                  ('COFF', ['DECA',], 'COFFEE'), ('DECAF', [], 'DECAF COFFEE'),
+                  ('HOT TEA', [], 'HOT TEA'), ('ICE', [], 'ICED TEA'),
+                  ('WATER', [], 'BOTTLED WATER'), ('MONST', [], 'MONSTER'),],
+        'extra': [],
+        'large': (),},
+
     'BURGERS': {
-        'order': [('CLASSIC', [], 'CLASSIC'), ('DADDY', [], 'DADDY'),
-                  ('TURK', [], 'TURKEY'), ('CHICK', [], 'CHICKEN'),
-                  ('HAWAII', [], 'HAWAII FIVE-O'), ('MUSH', [], 'MUSHROOM MADNESS'),
-                  ('LAMB', [], 'LAMB'),
+        'category': 'FOOD',
+        'order': [('CLASSIC', ['PAT',], 'CLASSIC'), ('DADDY', ['PAT',], 'DADDY'),
+                  ('TURK', ['PAT',], 'TURKEY'), ('CHICK', ['PAT',], 'CHICKEN'),
+                  ('HAWAII', ['PAT'], 'HAWAII FIVE-O'), ('MUSH', ['PAT',], 'MUSHROOM MADNESS'),
+                  ('LAMB', ['PAT',], 'LAMB'),
                   ('ADD CLA', [], 'ADD CLASSIC PATTY'), ('ADD DAD', [], 'ADD DADDY PATTY'),
                   ('ADD TUR', [], 'ADD TURKEY'), ('ADD CHI', [], 'ADD CHICKEN PATTY'),
                   ('ADD HAW', [], 'ADD HAWAII FIVE-O PATTY'), ('ADD MUS', [], 'ADD MUSHROOM MADNESS PATTY'),
                   ('ADD LAM', [], 'ADD LAMB PATTY'),],
-        'extra': [('VEG', [], 'VEGGIE'), ('BELLO', [], 'PORTABELLO'),],
+        'extra': [('VEG', ['PAT',], 'VEGGIE'), ('BELLO', [], 'PORTABELLO'),
+                  ('ADD VEG', [], 'ADD VEGGIE PATTY'),],
         'large': ('1/2', '', '1/2 LB'),},
 
     'SANDWICHES': {
+        'category': 'FOOD',
         'order': [('CHICK', ['EXTRA',], 'CHICKEN'), ('SALM', ['EXTRA',], 'SALMON'),
                   ('MIGNON', ['EXTRA',], 'FILET MIGNON'),  ('PORK', ['EXTRA',], 'PORK TENDERLOIN'),
                   ('CHEE', [], 'GRILLED CHEESE'), ('BLT', [], 'BLT'),
@@ -62,6 +76,7 @@ subcategories = {
         'large': (),},
 
     'DAWGS & SAUSAGES': {
+        'category': 'FOOD',
         'order': [('BIG', [], 'BIG DAWG'), ('BACON', [], 'SMOKED BACON DAWG'),
                   ('ANTON', [], 'SAN ANTONIO CHILI DAWG'), ('CHEE', [], 'NACHO CHEESE DAWG'),
                   ('BRAT', [], 'BRATWURST SAUSAGE'), ('ITAL', [], 'SWEET ITALIAN SAUSAGE'),
@@ -70,12 +85,14 @@ subcategories = {
         'large': (),},
 
     'CHICKEN WINGS': {
+        'category': 'FOOD',
         'order': [('6 PIEC', [], '6 PIECES'), ('12 PIEC', [], '12 PIECES'),
                   ('18 PIEC', [], '18 PIECES'), ('50 PIE', [], '50 PIECES'),],
         'extra': [],
         'large': (),},
 
     'FRIES & RINGS': {
+        'category': 'FOOD',
         'order': [('REGULAR FR', [], 'REGULAR FRIES'), ('GARLIC FR', ['CH', 'COMBO',], 'GARLIC FRIES'),
                   ('SWEET', [], 'SWEET POTATO FRIES'), ('ONION', [], 'ONION RINGS'),
                   ('TRIO', ['GARL',], 'DADDY TRIO'), ('TRIO GA', [], 'DADDY TRIO GARLIC'),
@@ -85,6 +102,7 @@ subcategories = {
         'large': (),},
 
     'COMBO': {
+        'category': 'FOOD',
         'order': [('REGULAR FR', [], 'REGULAR FRIES'), ('GARLIC FR', ['CH',], 'GARLIC FRIES'),
                   ('SWEET', [], 'SWEET POTATO FRIES'), ('ONION', [], 'ONION RINGS'),
                   ('LI CHEESE', ['GA',], 'CHILI CHEESE FRIES'), ('LI CHEESE GA', [], 'CHILI CHEESE GARLIC FRIES'),
@@ -93,6 +111,7 @@ subcategories = {
         'large': (),},
 
     'SIDES & SALADS': {
+        'category': 'FOOD',
         'order': [('BIG', [], 'BIG 50'),
                   ('SALAD', ['SIDE',], 'SALAD'), ('SIDE SALAD', [], 'SIDE SALAD'),
                   ('CHICK', [], 'ADD CHICKEN'), ('SALM', [], 'ADD SALMON'),
@@ -106,6 +125,7 @@ subcategories = {
         'large': (),},
 
     'MODIFIERS': {
+        'category': 'FOOD',
         'order': [('CHEDD', ['EXTRA',], 'ADD CHEDDAR CHEESE'), ('AMER', ['EXTRA',], 'ADD AMERICAN CHEESE'),
                   ('SWISS', ['EXTRA',], 'ADD SWISS CHEESE'), ('PEPPERJ', ['EXTRA',], 'ADD PEPPERJACK CHEESE'),
                   ('GORG', ['EXTRA',], 'ADD GORGONZOLA CHEESE'), ('NACHO', ['EXTRA',], 'ADD NACHO CHEESE'),
@@ -113,6 +133,10 @@ subcategories = {
                   ('MUSH', ['EXTRA',], 'ADD SAUTEED MUSHROOMS & ONIONS'), ('PINE', [], 'ADD GRILLED PINEAPPLE'),
                   ('EGG', [], 'ADD FRIED EGG'),  ('CHILI', [], 'ADD CHILI'),
                   ('RING', ['SUB',], 'ADD ONION RINGS'), ('BELL', [], 'ADD GRILLED BELL PEPPER'),
+                  ('SAUCE', ['BBQ',], 'ADD SAUCE'), ('BBQ', [], 'ADD BBQ SAUCE'),
+                  ('RANCH', [], 'ADD RANCH'), ('PESTO', [], 'ADD PESTO AIOLI'),
+                  ('DIJON', [], 'ADD DIJON-MAYO AIOLI'), ('MAYO', ['DIJ',], 'ADD MAYO AIOLI'),
+                  ('KETCH', [], 'ADD SMOKED KETCHEP'),
                   ('EXTRA CHEDD', [], 'EXTRA CHEDDAR CHEESE'), ('EXTRA AMER', [], 'EXTRA AMERICAN CHEESE'),
                   ('EXTRA SWISS', [], 'EXTRA SWISS CHEESE'), ('EXTRA PEPPERJ', [], 'EXTRA PEPPERJACK CHEESE'),
                   ('EXTRA GORG', [], 'EXTRA GORGONZOLA CHEESE'), ('EXTRA NACHO', [], 'EXTRA NACHO CHEESE'),
@@ -120,25 +144,13 @@ subcategories = {
                   ('EXTRA SAUT', [], 'EXTRA SAUTEED MUSHROOMS & ONIONS'),
                   ('SUB GAR', [], 'SUB GARLIC FRIES'), ('SWEET PO', [], 'SUB SWEET POTATO FRIES'),
                   ('RING', ['TOP',], 'SUB ONION RINGS'),
-                  ('SAUCE', ['BBQ',], 'ADD SAUCE'), ('BBQ', [], 'ADD BBQ SAUCE'),
-                  ('RANCH', [], 'ADD RANCH'), ('PESTO', [], 'ADD PESTO AIOLI'),
-                  ('DIJON', [], 'ADD DIJON-MAYO AIOLI'), ('MAYO', ['DIJ',], 'ADD MAYO AIOLI'),
-                  ('KETCH', [], 'ADD SMOKED KETCHEP'),
                   ('ONIONS-D', [], 'ADD CARAMELIZED ONIONS - DAWGS'), ('KRAUT', [], 'ADD SAUERKRAUT - DAWGS'),
                   ('SWEET PE', [], 'ADD SWEET PEPPERS - DAWGS'), ('SPICY PE', [], 'ADD SPICY PEPPERS - DAWGS'),],
         'extra': [],
         'large': (),},
 
-    'DRINKS': {
-        'order': [('SMAL', [], 'SMALL SODA'), ('LARG', [], 'LARGE SODA'),
-                  ('PITCH', [], 'PITCHER SODA'),
-                  ('COFF', ['DECA',], 'COFFEE'), ('DECAF', [], 'DECAF COFFEE'),
-                  ('HOT TEA', [], 'HOT TEA'), ('ICE', [], 'ICED TEA'),
-                  ('WATER', [], 'BOTTLED WATER'), ('MONST', [], 'MONSTER'),],
-        'extra': [],
-        'large': (),},
-
     'DESSERTS': {
+        'category': 'FOOD',
         'order': [('VANIL', [], 'VANILLA SHAKE'), ('CHOC', [], 'CHOCOLATE SHAKE'),
                   ('STRAW', [], 'STRAWBERRY SHAKE'), ('ROOT', [], 'ROOTBEER FLOAT SHAKE'),
                   ('POLIT', [], 'NEAPOLITAN SHAKE'),
@@ -150,6 +162,7 @@ subcategories = {
         'large': (),},
 
     'KIDS MENU': {
+        'category': 'FOOD',
         'order': [('BURG', ['CHEE', 'TUR',], 'KIDS BURGER'), ('CHEESE BURG', [], 'KIDS CHEESE BURGER'),
                   ('KEY BURG', [], 'KIDS TURKEY BURGER'), ('DAWG', [], 'KIDS DAWG'),
                   ('LED CHEE', [], 'KIDS GRILLED CHEESE'), ('CRISP', [], 'KIDS CHICKEN CRISPERS'),
@@ -158,6 +171,7 @@ subcategories = {
         'large': (),},
 
     'BREAKFAST SANDWICHES': {
+        'category': 'FOOD',
         'order': [('PLAIN', [], 'PLAIN OMELET'), ('WHITE', [], 'EGG WHITE OMELET'),
                   ('CHOR', [], 'CHORIZO OMELET'), ('THREE', [], '3 CHEESE OMELET'),
                   ('BAC', [], 'BACON ONION 3 CHEESE OMELET'),],
@@ -165,17 +179,26 @@ subcategories = {
         'large': (),},
 
     'SUB PATTIES': {
+        'category': '',
         'order': [],
         'extra': [],
         'large': (),},
 
     'MERCHANDISE': {
+        'category': 'MERCHANDISE',
         'order': [('HAT', [], 'HAT'), ('SHIRT', [], 'T-SHIRT'),],
         'extra': [],
         'large': (),},
 
     'GIFT CARD': {
+        'category': 'OTHER',
         'order': [('OPEN', [], 'OPEN ITEM'),],
+        'extra': [],
+        'large': (),},
+
+    'EXTRANEOUS': {
+        'category': 'OTHER',
+        'order': [('KITCHEN MEMO', [], 'KITCHEN MEMO'),],
         'extra': [],
         'large': (),},
 }
@@ -194,7 +217,8 @@ out_of_order = [('ADD 1/2 CLASSIC', [], 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '
                 ('COMBO SWEET POTATO', [], 'SWEET POTATO FRIES', 'COMBO', '', '', 0),
                 ('COMBO ONION RINGS', [], 'ONION RINGS', 'COMBO', '', '', 0),
                 ('COMBO NACHO CHEESE FRIES', [], 'NACHO CHEESE FRIES', 'COMBO', '', '', 0),
-                ('JR. CHICKEN CRISPERS', [], 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),]
+                ('JR. CHICKEN CRISPERS', [], 'KIDS CHICKEN CRISPERS', 'KIDS MENU', '', '', 0),
+                ('KITCHEN MEMO', [], 'KITCHEN MEMO', 'EXTRANEOUS', '', '', 0),]
 
 # PixelPOS "Profit by Summary Group" sales report columns.
 # Nothing is in Cost, % Cost or Profit columns so ignoring.
@@ -215,11 +239,14 @@ excludes = ['FIRE GRI', 'SUMMARY', 'REPORT', 'DESCRIPTION', 'PAGE', 'PRINTED',]
 
 def parse_sales(sales_raw):
     """Parse PixelPOS "Profit by Summary Group" sales report."""
+    ok = True
     d = {}
     d2 = {}
     for c in cols:
         d[c] = []
         d2[c] = []
+    categories_found = []
+    subcategories_found = []
 
     try:
         with open(sales_raw, 'rb') as in_f:
@@ -251,6 +278,7 @@ def parse_sales(sales_raw):
                 continue
             else:
                 category = d['Category'][r]
+                categories_found.append(category)
 
         # Catch subcategories and ignore duplicates.
         if d['Subcategory'][r] and not any(row[2:]):
@@ -258,6 +286,7 @@ def parse_sales(sales_raw):
                 continue
             else:
                 subcategory = d['Subcategory'][r]
+                subcategories_found.append(subcategory)
                 dtemp = {}
                 for c in cols:
                     dtemp[c] = []
@@ -283,6 +312,49 @@ def parse_sales(sales_raw):
 
         # Add row to output dictionary.
         [d2[c].append(d[c][r].upper()) for c in cols]
+
+    # Add categories and subcategories that are missing, with empty items.
+    for subcat in subcategories:
+        if subcat not in subcategories_found:
+            if subcategories[subcat]['category'] in categories_found:
+                r = len(d2[cols[0]]) - d2[cols[0]][::-1].index(subcategories[subcat]['category']) - 1
+                row = ['', subcat, '', '', '',]
+                [d2[c].insert(r, row[k]) for k, c in enumerate(cols)]
+                for o in subcategories[subcat]['order']:
+                    r += 1
+                    row = ['', '', o[2], '0', '0.00',]
+                    [d2[c].insert(r, row[k]) for k, c in enumerate(cols)]
+                if subcategories[subcat]['large']:
+                    for o in subcategories[subcat]['order']:
+                        r += 1
+                        row = ['', '', o[2] + ' ' + subcategories[subcat]['large'][2], '0', '0.00',]
+                        [d2[c].insert(r, row[k]) for k, c in enumerate(cols)]
+                for o in subcategories[subcat]['extra']:
+                    r += 1
+                    row = ['', '', o[2], '0', '0.00',]
+                    [d2[c].insert(r, row[k]) for k, c in enumerate(cols)]
+                r += 1
+                row = ['', subcat, '', '0', '0.00',]
+                [d2[c].insert(r, row[k]) for k, c in enumerate(cols)]
+            else:
+                row = [subcategories[subcat]['category'], '', '', '', '',]
+                [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                row = ['', subcat, '', '', '',]
+                [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                for o in subcategories[subcat]['order']:
+                    row = ['', '', o[2], '0', '0.00',]
+                    [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                if subcategories[subcat]['large']:
+                    for o in subcategories[subcat]['order']:
+                        row = ['', '', o[2] + ' ' + subcategories[subcat]['large'][2], '0', '0.00',]
+                        [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                for o in subcategories[subcat]['extra']:
+                    row = ['', '', o[2], '0', '0.00',]
+                    [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                row = ['', subcat, '', '0', '0.00',]
+                [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
+                row = [subcategories[subcat]['category'], '', '', '0', '0.00',]
+                [d2[c].insert(-1, row[k]) for k, c in enumerate(cols)]
 
     # Consolidate misplaced items into correct item positions.
     total_quantity = 0
@@ -349,12 +421,13 @@ def parse_sales(sales_raw):
     d2['Value'][-1] = '%.2f' % float(d2['Value'][-1])
 
     if total_quantity != d2['Quantity'][-1] or total_value != d2['Value'][-1]:
+        ok = False
         print ('File "%s": Grand Totals do not match.' % (sales_raw.split('/')[-1]))
 
     d2['Quantity'][-1] = total_quantity
     d2['Value'][-1] = total_value
 
-    return d2
+    return d2, ok
 
 
 def organize(sales_raw, subcategory, d, misplaced=[]):
@@ -544,10 +617,10 @@ def main():
         print 'File "%s" not found.' % sales_file_raw
         return
 
-    d = parse_sales(sales_raw)
-    done = output_new(d, sales_clean) if d else False
+    d, ok1 = parse_sales(sales_raw)
+    ok2 = output_new(d, sales_clean) if d else False
 
-    print 'OK' if done else 'No Bueno'
+    print 'OK' if ok1 and ok2 else 'No Bueno'
 
 
 if __name__ == '__main__':

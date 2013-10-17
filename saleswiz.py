@@ -3,10 +3,8 @@
 
 # To do:
 # 1. Loop to read, convert and process all reports in folder.
-# 2. Place misplaced items in correct subcategories.
-# 3. Recalculate subcategory and category tallies after removing misplaced items.
-# 4. Order categories and subcategories.
-# 5. Put extraneous items like KITCHEN MEMO into OTHER.
+# 2. Order categories and subcategories.
+# 3. Put extraneous items like KITCHEN MEMO into OTHER.
 
 import os
 import glob
@@ -207,6 +205,9 @@ keys = ['Category', 'Subcategory', 'Item', 'Col03', 'Col04', 'Col05', 'Col06',
 
 # Output columns.
 cols = ['Category', 'Subcategory', 'Item', 'Quantity', 'Value',]
+item = cols.index('Item')
+quantity = cols.index('Quantity')
+value = cols.index('Value')
 
 # Search terms for rows in input file to exclude.
 excludes = ['FIRE GRI', 'SUMMARY', 'REPORT', 'DESCRIPTION', 'PAGE', 'PRINTED',]
@@ -275,7 +276,7 @@ def parse_sales(sales_raw):
         if d['Subcategory'][r] and not subcategories[d['Subcategory'][r]]['order']:
             continue
 
-        # Catch any items for organizing.
+        # Catch items for organizing.
         if d['Item'][r]:
             [dtemp[c].append(d[c][r]) for c in cols]
             continue
@@ -283,14 +284,77 @@ def parse_sales(sales_raw):
         # Add row to output dictionary.
         [d2[c].append(d[c][r].upper()) for c in cols]
 
-    # Insert or consolidate misplaced items into correct subcategory positions.
-    #for mis in misplaced:
-    #    Insert or consolidate in correct d[c][r] at position determined by mis[2] (0=small, 1=small&large, 2=extra).
-    #    Delete item from misplaced.
-    #for m, mis in misplaced:
-    #    serving =
+    # Consolidate misplaced items into correct item positions.
+    total_quantity = 0
+    total_value = 0
+    for r in xrange(len(d2[cols[0]])):
+        row = [d2[c][r] for c in cols]
 
-    return d2, misplaced  # MAW
+        # Catch categories.
+        if d2['Category'][r] and not any(row[1:]):
+            category = d2['Category'][r]
+            cat_quantity = 0
+            cat_value = 0
+            continue
+
+        # Catch subcategories.
+        if d2['Subcategory'][r] and not any(row[2:]):
+            subcategory = d2['Subcategory'][r]
+            subcat_quantity = 0
+            subcat_value = 0
+            continue
+
+        # Catch end of category and update tallies.
+        if d2['Category'][r] and d2['Category'][r] != 'GRAND TOTALS' and any(row[1:]):
+            d2['Quantity'][r] = '%.2f' % cat_quantity
+            d2['Value'][r] = '%.2f' % cat_value
+            total_quantity += cat_quantity
+            total_value += cat_value
+            cat_quantity = 0
+            cat_value = 0
+            category = ''
+            continue
+
+        # Catch end of subcategory and update tallies.
+        if d2['Subcategory'][r] and any(row[2:]):
+            d2['Quantity'][r] = '%.2f' % subcat_quantity
+            d2['Value'][r] = '%.2f' % subcat_value
+            cat_quantity += subcat_quantity
+            cat_value += subcat_value
+            subcat_quantity = 0
+            subcat_value = 0
+            subcategory = ''
+            continue
+
+        # Catch items. Consolidate with any matching misplaced item, and tally.
+        if d2['Item'][r]:
+            found = False
+            for m, mis in enumerate(misplaced):
+                if subcategory == mis[0] and d2['Item'][r] == mis[3][item]:
+                    found = True
+                    d2['Quantity'][r] = str(float(d2['Quantity'][r]) + float(mis[3][quantity]))
+                    d2['Value'][r] = str(float(d2['Value'][r]) + float(mis[3][value]))
+                    break
+            if found:
+                del misplaced[m]
+            subcat_quantity += float(d2['Quantity'][r])
+            subcat_value += float(d2['Value'][r])
+            d2['Quantity'][r] = '%.2f' % float(d2['Quantity'][r])
+            d2['Value'][r] = '%.2f' % float(d2['Value'][r])
+
+    # Grand total tallies should match new tallies.
+    total_quantity = '%.2f' % total_quantity
+    total_value = '%.2f' % total_value
+    d2['Quantity'][-1] = '%.2f' % float(d2['Quantity'][-1])
+    d2['Value'][-1] = '%.2f' % float(d2['Value'][-1])
+
+    if total_quantity != d2['Quantity'][-1] or total_value != d2['Value'][-1]:
+        print ('File "%s": Grand Totals do not match.' % (sales_raw.split('/')[-1]))
+
+    d2['Quantity'][-1] = total_quantity
+    d2['Value'][-1] = total_value
+
+    return d2
 
 
 def organize(sales_raw, subcategory, d, misplaced=[]):
@@ -299,9 +363,6 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
     order = subcategories[subcategory]['order']
     extra = subcategories[subcategory]['extra']
     large = subcategories[subcategory]['large'][:]
-    item = cols.index('Item')
-    quantity = cols.index('Quantity')
-    value = cols.index('Value')
 
     if large:
         if extra:
@@ -333,7 +394,6 @@ def organize(sales_raw, subcategory, d, misplaced=[]):
             found = False
             for k, o in enumerate(ordr):
                 if o[0] in serving[item] and not any(o[1] and o[1][j] in serving[item] for j in xrange(len(o[1]))):
-                    # and not any(ooo[0] in serving[item] and not (ooo[1] and ooo[1] in serving[item]) and ooo[3] not in subcategory for ooo in out_of_order):
                     found = True
                     if out[i][k]:
                         out[i][k][quantity] = str(float(out[i][k][quantity]) + float(fixnum(serving[quantity])))
@@ -484,8 +544,7 @@ def main():
         print 'File "%s" not found.' % sales_file_raw
         return
 
-    d, misplaced = parse_sales(sales_raw)  # MAW
-    print misplaced
+    d = parse_sales(sales_raw)
     done = output_new(d, sales_clean) if d else False
 
     print 'OK' if done else 'No Bueno'

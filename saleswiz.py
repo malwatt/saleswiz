@@ -18,14 +18,14 @@ subcategories = OrderedDict([
         'category': 'BEER',
         'order': [('BOCK', [], 'DADDY BOCK'), ('LIGHT', ['BUD',], 'DADDY LIGHT'),
                   ('STELLA', [], 'STELLA'), ('BLUE', [], 'BLUE MOON'),
-                  ('STONE IPA', [], 'STONE IPA'), ('SMITH X', [], 'ALESMITH X'),
+                  ('STONE IPA', [], 'STONE IPA'), ('EXTRA P', [], 'ALESMITH X'),
                   ('ROCKET', [], 'RED ROCKET'), ('ROTAT', [], 'ROTATOR'),
                   ('CASTLE', [], 'NEWCASTLE'), ('XX', [], 'DOS XX'),
                   ('HEIN', [], 'HEINEKEN'), ('TOP BELG', [], 'SHOCK TOP BELGIAN'),
                   ('NEGR', [], 'NEGRA MODELO'), ('BUD', [], 'BUD LIGHT'),
                   ('ARDEN', [], 'HOEGAARDEN'), ('TOP IPA', [], 'SHOCK TOP IPA'),],
         'extra': [('SAMPLE', [], 'BEER SAMPLER'),],
-        'large': ('CHER', '', 'PITCHER'),},),
+        'large': ('CHE', '', 'PITCHER'),},),
 
     ('WINE', {
         'category': 'WINE',

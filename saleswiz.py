@@ -202,6 +202,7 @@ subcategories = OrderedDict([
 # Items considered misplaced, with exclude term, chosen name and subcategory, large search term and chosen name,
 # and 0 if small, 1 if small&large or 3 if an extra.
 out_of_order = [('ADD 1/2 CLASSIC', [], 'ADD CLASSIC PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
+                ('ADD 1/2 DADDY', [], 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
                 ('ADD 1/2 TURKEY', [], 'ADD TURKEY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
                 ('SUB DADDY PATTY', [], 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),
                 ('SUB 1/2LB DADDY PATTY', [], 'ADD DADDY PATTY', 'BURGERS', '1/2', '1/2 LB', 1),

@@ -37,7 +37,7 @@ def flip(out_base, files):
         period = f.split('/')[-1].split('sales')[0]
         q[period] = []
 
-    for r in xrange(1, len(dl[0][cols[0]]) - 1):
+    for r in xrange(1, len(dl[0][cols[0]])):
         row = [dl[0][c][r] for c in cols]
         if dl[0]['Item'][r]:
             q['Item'].append(dl[0]['Item'][r])
@@ -49,7 +49,7 @@ def flip(out_base, files):
     v = deepcopy(q)
 
     for i, d in enumerate(dl):
-        for r in xrange(1, len(dl[0][cols[0]]) - 1):
+        for r in xrange(1, len(dl[0][cols[0]])):
             if d['Quantity'][r]:
                 q[q.keys()[i+1]].append(d['Quantity'][r])
                 v[v.keys()[i+1]].append(d['Value'][r])

@@ -13,12 +13,11 @@ from copy import deepcopy
 # *sales_clean.csv columns.
 cols = ['Category', 'Subcategory', 'Item', 'Quantity', 'Value',]
 
-
 def flip(out_base, files):
     """Consolidate monthly or weekly sales_clean.csv files into single table."""
     dl = []
-    q = OrderedDict()
-    q['Item'] = []
+    q = OrderedDict([(c, []) for c in cols[:3]])
+
     for i, f in enumerate(files):
         dl.append(OrderedDict())
         for c in cols:
@@ -38,21 +37,18 @@ def flip(out_base, files):
         q[period] = []
 
     for r in xrange(1, len(dl[0][cols[0]])):
-        row = [dl[0][c][r] for c in cols]
-        if dl[0]['Item'][r]:
-            q['Item'].append(dl[0]['Item'][r])
-        elif dl[0]['Subcategory'][r] and any(row[2:]):
-            q['Item'].append('Subcategory - ' + dl[0]['Subcategory'][r])
-        elif dl[0]['Category'][r] and any(row[1:]):
-            q['Item'].append('Category - ' + dl[0]['Category'][r])
+        [q[c].append(dl[0][c][r]) for c in cols[:3]]
 
     v = deepcopy(q)
 
     for i, d in enumerate(dl):
         for r in xrange(1, len(dl[0][cols[0]])):
             if d['Quantity'][r]:
-                q[q.keys()[i+1]].append(d['Quantity'][r])
-                v[v.keys()[i+1]].append(d['Value'][r])
+                q[q.keys()[i+3]].append(d['Quantity'][r])
+                v[v.keys()[i+3]].append(d['Value'][r])
+            else:
+                q[q.keys()[i+3]].append('')
+                v[v.keys()[i+3]].append('')
 
     ok_q = write_file(q, out_base + 'quantity.csv', q.keys())
     ok_v = write_file(v, out_base + 'value.csv', v.keys())

@@ -82,7 +82,7 @@ def main():
         print 'Specify monthly, weekly or both.'
         return
 
-    reports_dir_win = 'C:\\Users\\Malky\\Documents\\BD\\Reports'
+    reports_dir_win = 'C:\\Users\\Malky\\Documents\\BD\\Reports\\sales'
     reports_dir_py = reports_dir_win.decode('utf-8').replace('\\','/')
 
     monthly = reports_dir_py + '/monthly_'
